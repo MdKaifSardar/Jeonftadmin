@@ -11,13 +11,23 @@ import VideoSection from "../components/LandingPage/VideoSection";
 import TreasureNFTLoginModal from "@/components/NftLoginModal";
 import MLMTree from "@/components/MLMTree";
 import NFTCollectibles from "@/components/LandingPage/NFTCollectibles";
+import { verifyToken } from "@/utils/jwt";
 
 const LandingPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Show login modal on page load
+  // Show login modal only if there is no valid token
   useEffect(() => {
-    setIsModalOpen(true);
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token || !(await verifyToken(token).catch(() => false))) {
+        setIsModalOpen(true); // Show modal if no valid token
+      } else {
+        setIsModalOpen(false); // Hide modal if token is valid
+      }
+    };
+
+    checkAuth();
   }, []);
 
   return (

@@ -24,6 +24,8 @@ const NFTCard: React.FC<NFTCardProps> = ({ nft }) => {
     >
       <div className="relative w-fit aspect-square overflow-hidden">
         <Image
+          width={100}
+          height={100}
           src={nft.image}
           alt={nft.title}
           className={`w-50 rounded-2xl h-50 object-cover transition-opacity duration-500 ${

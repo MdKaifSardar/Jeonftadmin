@@ -7,7 +7,9 @@ interface TreasureNFTLoginModalProps {
   onClose: () => void;
 }
 
-const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({ onClose }) => {
+const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({
+  onClose,
+}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +28,8 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({ onClose }
             <div className="relative">
               <div className="relative flex items-center justify-center p-2">
                 <Image
+                  width={100}
+                  height={100}
                   src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743186960/collection-images/zph5ehraactocpnqqnfh.jpg"
                   alt="NFT"
                   className="rounded-2xl"
@@ -40,7 +44,9 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({ onClose }
         </div>
 
         <div className="p-6">
-          <h1 className="text-2xl text-blue-900 font-bold text-center mb-6">Log in</h1>
+          <h1 className="text-2xl text-blue-900 font-bold text-center mb-6">
+            Log in
+          </h1>
 
           <div className="mb-6">
             <button

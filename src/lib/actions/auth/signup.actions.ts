@@ -2,10 +2,9 @@
 
 import User from "@/lib/models/userModel";
 import { hashPassword } from "../../../utils/bcrypt";
-import { generateToken } from "../../../utils/jwt";
 import { connectToDatabase } from "@/lib/database/db";
 import { generateReferralCode } from "@/utils/referral-code-gen";
-import { setCookie } from "cookies-next";
+import { signToken } from "@/utils/jwt";
 
 export const signup = async (
   email: string,
@@ -34,20 +33,14 @@ export const signup = async (
 
     await newUser.save();
 
-    const token = generateToken({ id: newUser._id, email: newUser.email });
-
-    // Save the token to cookies using cookies-next
-    setCookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-    });
+    const payload = { email, userId: newUser._id }; // Ensure userId is a string
+    const token = await signToken(payload);
 
     return {
       success: true,
       message: "Signup successful.",
-      data: { user: newUser },
+      token,
+      userId: newUser._id, // Return userId as a string
     };
   } catch (error) {
     console.error("Error during signup:", error);

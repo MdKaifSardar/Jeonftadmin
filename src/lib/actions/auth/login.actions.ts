@@ -1,10 +1,9 @@
 "use server";
 
 import User from "@/lib/models/userModel";
-import { verifyPassword } from "@/utils/bcrypt"; // Correct import for password verification
-import { generateToken } from "@/utils/jwt";
+import { verifyPassword } from "@/utils/bcrypt";
+import { signToken } from "@/utils/jwt";
 import { connectToDatabase } from "@/lib/database/db";
-import { setCookie } from "cookies-next";
 
 export const login = async (email: string, password: string) => {
   try {
@@ -21,17 +20,15 @@ export const login = async (email: string, password: string) => {
       return { success: false, error: "Invalid email or password." };
     }
 
-    const token = generateToken({ id: user._id, email: user.email });
+    const payload = { email, userId: user._id }; // Ensure userId is a string
+    const token = await signToken(payload); // Generate token using signToken
 
-    // Save the token to cookies using cookies-next
-    setCookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-    });
-
-    return { success: true, message: "Login successful.", data: { user } };
+    return {
+      success: true,
+      message: "Login successful.",
+      token, // Return the token in the response
+      userId: user._id, // Return userId as a string
+    };
   } catch (error) {
     console.error("Error during login:", error);
     return { success: false, error: "Failed to log in." };

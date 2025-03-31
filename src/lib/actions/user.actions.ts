@@ -4,6 +4,7 @@ import User from "@/lib/models/userModel";
 import { IUser } from "../models/userModel";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/database/db";
+import { Types } from "mongoose";
 import { verifyToken } from "@/utils/jwt";
 import { getCookie } from "cookies-next";
 
@@ -103,5 +104,26 @@ export const getUserFromToken = async (req: any) => {
   } catch (error) {
     console.error("Error fetching user from token:", error);
     return { success: false, error: "Failed to fetch user from token." };
+  }
+};
+
+export const updateUserWalletId = async (
+  userId: string,
+  walletId: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    await connectToDatabase();
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return { success: false, message: "User not found." };
+    }
+    user.walletId = new Types.ObjectId(walletId); // Update the walletId field
+    await user.save();
+
+    return { success: true, message: "Wallet ID updated successfully." };
+  } catch (error) {
+    console.error("Error updating wallet ID:", error);
+    return { success: false, message: "Failed to update wallet ID." };
   }
 };

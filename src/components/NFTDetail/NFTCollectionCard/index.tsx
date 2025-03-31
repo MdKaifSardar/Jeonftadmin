@@ -17,7 +17,8 @@ interface NFTCollectionData {
 }
 
 const NFTCollectionCard = ({ data }: { data: NFTCollectionData }) => {
-  const { image, title, logo, author, items, owner, volume, floor_price, bio } = data;
+  const { image, title, logo, author, items, owner, volume, floor_price, bio } =
+    data;
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -34,7 +35,13 @@ const NFTCollectionCard = ({ data }: { data: NFTCollectionData }) => {
     <div className="w-full mx-auto bg-white shadow-lg rounded-xl overflow-hidden py-8 mt-10 text-black">
       {/* Banner */}
       <div className="relative w-full h-40 sm:h-60">
-        <Image src={image} alt={title} className="w-full h-full object-cover" />
+        <Image
+          width={100}
+          height={100}
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Profile Section */}
@@ -60,22 +67,34 @@ const NFTCollectionCard = ({ data }: { data: NFTCollectionData }) => {
         {/* Stats Section */}
         <div className="grid grid-cols-2 sm:grid-cols-4 justify-center gap-4 sm:gap-20 px-4 sm:px-6 pb-6 text-center mb-8">
           <div className="flex flex-col items-center gap-2.5">
-            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{items}</p>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">
+              {items}
+            </p>
             <p className="text-gray-500 text-sm sm:text-lg font-light">Items</p>
           </div>
           <div className="flex flex-col items-center gap-2.5">
-            <p className="text-xl sm:text-2xl font-semibold text-gray-900">{owner}</p>
-            <p className="text-gray-500 text-sm sm:text-lg font-light">Owners</p>
+            <p className="text-xl sm:text-2xl font-semibold text-gray-900">
+              {owner}
+            </p>
+            <p className="text-gray-500 text-sm sm:text-lg font-light">
+              Owners
+            </p>
           </div>
           <div className="flex flex-col items-center gap-2.5">
-            <p className="text-xl sm:text-2xl font-semibold text-green-500">{volume}</p>
-            <p className="text-gray-500 text-sm sm:text-lg font-light">Volume Traded</p>
+            <p className="text-xl sm:text-2xl font-semibold text-green-500">
+              {volume}
+            </p>
+            <p className="text-gray-500 text-sm sm:text-lg font-light">
+              Volume Traded
+            </p>
           </div>
           <div className="flex flex-col items-center gap-2.5">
             <p className="text-xl sm:text-2xl font-semibold text-green-500">
               {floor_price}
             </p>
-            <p className="text-gray-500 text-sm sm:text-lg font-light">Floor Price</p>
+            <p className="text-gray-500 text-sm sm:text-lg font-light">
+              Floor Price
+            </p>
           </div>
         </div>
       </div>
@@ -127,14 +146,14 @@ const NFTCollectionCard = ({ data }: { data: NFTCollectionData }) => {
           />
         </div>
         <div className="flex gap-4 justify-start">
-        <select className="w-fit px-4 md:pr-8 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-400">
-          <option value="none"></option>
-          <option value="price">Price</option>
-          <option value="theme">Theme</option>
-        </select>
-        <button className="w-full sm:w-fit p-2 rounded-full bg-blue-900">
-          <BiSort className="w-6 h-6 text-white" />
-        </button>
+          <select className="w-fit px-4 md:pr-8 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-400">
+            <option value="none"></option>
+            <option value="price">Price</option>
+            <option value="theme">Theme</option>
+          </select>
+          <button className="w-full sm:w-fit p-2 rounded-full bg-blue-900">
+            <BiSort className="w-6 h-6 text-white" />
+          </button>
         </div>
       </div>
     </div>

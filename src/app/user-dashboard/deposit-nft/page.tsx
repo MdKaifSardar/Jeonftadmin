@@ -67,6 +67,8 @@ const DepositNFT = () => {
             </button>
           </div>
           <Image
+            width={100}
+            height={100}
             src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
             alt=""
             className="w-110 h-1/2 object-cover"

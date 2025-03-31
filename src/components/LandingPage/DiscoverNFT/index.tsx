@@ -31,7 +31,6 @@ const DiscoverNFTs = () => {
     { id: "133737", price: "228 USDT", img: nft8 },
   ];
 
-
   const handleCategoryClick = (index: number) => {
     setDirection(index > currentIndex ? 1 : -1);
     setCurrentIndex(index);
@@ -84,11 +83,15 @@ const DiscoverNFTs = () => {
               >
                 <div className="relative aspect-square mb-2 sm:mb-4">
                   <Image
+                    width={100}
+                    height={100}
                     src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                     alt={`NFT ${nft.id}`}
                     className="w-full h-full object-cover rounded-xl sm:rounded-2xl"
                   />
                   <Image
+                    width={100}
+                    height={100}
                     src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                     alt="Stake logo"
                     className="absolute bottom-1 left-2 sm:left-3 w-8 sm:w-10 h-8 sm:h-10 rounded-xl sm:rounded-2xl"
@@ -100,7 +103,13 @@ const DiscoverNFTs = () => {
                     NFT_{nft.id}
                   </h3>
                   <div className="flex items-center space-x-1 sm:space-x-2">
-                    <Image src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png" alt="Token" className="w-4 sm:w-5 h-4 sm:h-5" />
+                    <Image
+                      width={100}
+                      height={100}
+                      src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
+                      alt="Token"
+                      className="w-4 sm:w-5 h-4 sm:h-5"
+                    />
                     <span className="text-sm sm:text-base text-gray-600">
                       {nft.price}
                     </span>

@@ -7,6 +7,8 @@ const NFTCard = ({ data }) => {
       <div className="flex gap-4">
         <div className="w-3/4">
           <Image
+            width={100}
+            height={100}
             src={data[0]}
             alt="Wild Girl"
             className="w-full h-full rounded-lg object-cover"
@@ -16,16 +18,22 @@ const NFTCard = ({ data }) => {
         {/* Small Images */}
         <div className="w-1/4 flex flex-col gap-3">
           <Image
+            width={100}
+            height={100}
             src={data[1]}
             alt="Thumbnail 1"
             className="w-full rounded-lg object-cover"
           />
           <Image
+            width={100}
+            height={100}
             src={data[2]}
             alt="Thumbnail 2"
             className="w-full rounded-lg object-cover"
           />
           <Image
+            width={100}
+            height={100}
             src={data[3]}
             alt="Thumbnail 3"
             className="w-full rounded-lg object-cover"

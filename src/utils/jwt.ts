@@ -1,14 +1,25 @@
-import jwt from "jsonwebtoken";
+import { jwtVerify, SignJWT } from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+// Properly encode the JWT secret
+const SECRET = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET);
 
-export const generateToken = (payload: object) => 
-  jwt.sign(payload, JWT_SECRET, { expiresIn: "5d" });
+export interface TokenPayload {
+  [key: string]: unknown;
+}
 
-export const verifyToken = (token: string) => {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch {
-    throw new Error("Invalid or expired token");
-  }
+// Function to sign a token
+export const signToken = async (payload: TokenPayload): Promise<string> => {
+  return (
+    new SignJWT(payload)
+      .setProtectedHeader({ alg: "HS256" }) // Specify the algorithm to use
+      .setIssuedAt() // Set the issue time
+      // .setExpirationTime("1h") // Remove expiration time to prevent automatic expiry
+      .sign(SECRET)
+  );
+};
+
+// Function to verify a token
+export const verifyToken = async (token: string): Promise<TokenPayload> => {
+  const { payload } = await jwtVerify(token, SECRET);
+  return payload;
 };

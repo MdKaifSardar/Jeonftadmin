@@ -20,6 +20,8 @@ const StakeCard: React.FC<StakeCardProps> = ({ data, onStakeClick }) => {
   return (
     <div className="border rounded-lg p-4 shadow-md hover:shadow-lg transition">
       <Image
+        width={100}
+        height={100}
         src={data.image}
         alt={data.title}
         className="w-full h-14 rounded-lg object-cover mb-3"
@@ -53,7 +55,7 @@ const StakeCard: React.FC<StakeCardProps> = ({ data, onStakeClick }) => {
       </p>
 
       {/* Button */}
-      <button 
+      <button
         className="mt-4 w-full py-2 bg-blue-700 text-white rounded-lg font-semibold"
         onClick={() => onStakeClick(data)}
       >

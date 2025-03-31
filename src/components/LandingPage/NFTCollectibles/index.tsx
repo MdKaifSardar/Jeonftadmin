@@ -7,6 +7,8 @@ const NFTCollectibles = () => {
       <div className="flex flex-col md:flex-row items-center justify-between">
         <div className="relative flex-shrink-0 w-full md:w-1/2 flex justify-center md:justify-start">
           <Image
+            width={100}
+            height={100}
             src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
             alt="Tertiary NFT"
             className="w-full h-full object-cover rounded-lg"

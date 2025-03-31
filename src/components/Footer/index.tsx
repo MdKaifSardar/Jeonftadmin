@@ -6,7 +6,7 @@ import Image from "next/image";
 
 const Footer: React.FC = () => {
   return (
-    <footer className={`relative mx-auto`}>
+    <footer className="bg-blue-900 text-white py-6">
       <div className="max-w-6xl mx-auto px-6 p-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {/* Logo Section */}
@@ -68,6 +68,8 @@ const Footer: React.FC = () => {
             <div className="grid grid-cols-3 gap-6">
               <div className="bg-blue-400 rounded-2xl p-4 flex items-center justify-center">
                 <Image
+                  width={100}
+                  height={100}
                   src="/api/placeholder/120/120"
                   alt="App Store QR"
                   className="w-full"
@@ -75,6 +77,8 @@ const Footer: React.FC = () => {
               </div>
               <div className="bg-green-300 rounded-2xl p-4 flex items-center justify-center">
                 <Image
+                  width={100}
+                  height={100}
                   src="/api/placeholder/120/120"
                   alt="Google Play QR"
                   className="w-full"
@@ -82,6 +86,8 @@ const Footer: React.FC = () => {
               </div>
               <div className="bg-red-200 rounded-2xl p-4 flex items-center justify-center">
                 <Image
+                  width={100}
+                  height={100}
                   src="/api/placeholder/120/120"
                   alt="APK QR"
                   className="w-full"

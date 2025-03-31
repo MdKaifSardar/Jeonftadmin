@@ -23,6 +23,12 @@ const SignUpComponent: React.FC = () => {
         referralCode || undefined
       );
       if (response.success) {
+        if (response.token) {
+          localStorage.setItem("token", response.token); // Save token to localStorage
+        }
+        if (response.userId) {
+          localStorage.setItem("userId", String(response.userId)); // Save userId to localStorage
+        }
         toast.success(response.message);
         router.push("/"); // Redirect to the home page
       } else {
@@ -40,6 +46,8 @@ const SignUpComponent: React.FC = () => {
           <div className="flex flex-col items-center mb-8">
             <div className="w-28 h-28 flex items-center justify-center mb-4">
               <Image
+                width={100}
+                height={100}
                 src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743186960/collection-images/zph5ehraactocpnqqnfh.jpg"
                 alt="NFT"
                 className="rounded-2xl"

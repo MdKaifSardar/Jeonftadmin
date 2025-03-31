@@ -94,6 +94,8 @@ const StakingNFTCarousel = () => {
                 <div className="rounded-3xl overflow-hidden p-4 sm:p-8">
                   <div className="max-w-5xl mx-auto">
                     <Image
+                      width={100}
+                      height={100}
                       src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                       alt={src.alt}
                       className="w-full h-[30vh] sm:h-[40vh] md:h-[84vh] rounded-4xl object-cover"

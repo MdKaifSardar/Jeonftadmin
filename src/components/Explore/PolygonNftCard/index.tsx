@@ -24,6 +24,8 @@ const PolygonNftCard: React.FC<PolygonNftCardProps> = ({ data }) => {
         {/* Main Image */}
         <div className="overflow-hidden rounded-t-lg">
           <Image
+            width={100}
+            height={100}
             src={data.image}
             alt={data.title}
             className="object-cover w-96 h-42 rounded-lg"
@@ -34,6 +36,8 @@ const PolygonNftCard: React.FC<PolygonNftCardProps> = ({ data }) => {
           {/* Logo */}
           <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
             <Image
+              width={100}
+              height={100}
               src={data.logo}
               alt="logo"
               className="w-full h-full object-cover"

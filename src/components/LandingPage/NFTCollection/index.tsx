@@ -66,6 +66,8 @@ const NFTMarketplace = () => {
         <div className="sm:col-span-12 md:col-span-5">
           <div className="flex flex-col gap-4 rounded-3xl p-4 bg-white shadow-lg">
             <Image
+              width={100}
+              height={100}
               src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
               alt="PEPE Frog"
               className="w-full rounded-3xl"
@@ -73,6 +75,8 @@ const NFTMarketplace = () => {
             <div className="flex flex-col sm:flex-row justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Image
+                  width={100}
+                  height={100}
                   src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                   alt="Small PEPE"
                   className="w-8 h-8 rounded-full"
@@ -86,6 +90,8 @@ const NFTMarketplace = () => {
                 <div className="text-xs font-light">Highest bid</div>
                 <div className="text-sm flex items-center gap-1">
                   <Image
+                    width={100}
+                    height={100}
                     src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                     alt="Token"
                     className="w-4 h-4"
@@ -99,12 +105,14 @@ const NFTMarketplace = () => {
 
         {/* Related NFTs */}
         <div className="sm:col-span-12 md:col-span-4 space-y-4">
-          {relatedNFTs.map((nft) => (
+          {relatedNFTs.map((nft, index) => (
             <div
-              key={nft.id}
+              key={index}
               className="flex items-start gap-4 rounded-2xl p-4 bg-white shadow-lg"
             >
               <Image
+                width={100}
+                height={100}
                 src={nft.img}
                 alt={`PEPE ${nft.id}`}
                 className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl"
@@ -115,12 +123,16 @@ const NFTMarketplace = () => {
                 </span>
                 <div className="flex items-center gap-2">
                   <Image
+                    width={100}
+                    height={100}
                     src={nft.img}
                     alt="Token"
                     className="w-6 h-6 rounded-full"
                   />
                   <div className="border-emerald-500 flex items-center border-2 px-2 py-1 rounded-2xl">
                     <Image
+                      width={100}
+                      height={100}
                       src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                       alt="Token"
                       className="w-4 h-4"
@@ -158,6 +170,8 @@ const NFTMarketplace = () => {
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-lg w-6">{index + 1}</span>
                   <Image
+                    width={100}
+                    height={100}
                     src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                     alt={collection.name}
                     className="w-14 h-14 rounded-full"
@@ -167,6 +181,8 @@ const NFTMarketplace = () => {
                   <p className="font-semibold text-sm">{collection.name}</p>
                   <div className="flex items-center justify-end gap-2 text-sm text-gray-500">
                     <Image
+                      width={100}
+                      height={100}
                       src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                       alt="Token"
                       className="w-4 h-4"
