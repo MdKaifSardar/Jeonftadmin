@@ -10,6 +10,7 @@ export interface INFT extends Document {
     url: string;
     public_id: string;
   };
+  owner: mongoose.Types.ObjectId;
 }
 
 const NFTSchema = new Schema<INFT>({
@@ -22,6 +23,7 @@ const NFTSchema = new Schema<INFT>({
     url: { type: String, required: true },
     public_id: { type: String, required: true },
   },
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // new field
 });
 
 const NFT: Model<INFT> = mongoose.models.NFT || mongoose.model<INFT>("NFT", NFTSchema);

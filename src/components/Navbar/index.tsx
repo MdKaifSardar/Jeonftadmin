@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { AlignJustify, Bell, Search, Menu } from "lucide-react";
-import { verifyToken } from "@/utils/jwt";
+import useSearchNFTs from "@/hooks/useSearchNFTs";
 
 interface NavbarProps {
   isAuthenticated: boolean;
@@ -14,7 +15,11 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const dropdownRef = useRef<HTMLDivElement>(null); // Ref for the dropdown
+  const { searchForNFTs } = useSearchNFTs();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,6 +45,19 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      return;
+    }
+
+    await searchForNFTs(searchTerm);
+
+    // Redirect to nft-search page if not already there
+    if (pathname !== "/nft-search") {
+      router.push("/nft-search");
+    }
+  };
 
   return (
     <nav
@@ -83,9 +101,16 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
               <input
                 type="text"
                 placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="border border-gray-500 rounded-full w-full md:w-72 p-2 px-5 placeholder:text-gray-400 focus:outline-none"
               />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <button
+                onClick={handleSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              >
+                <Search className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
           </div>
         </div>
@@ -140,6 +165,24 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
                   Wallet
+                </Link>
+                <Link
+                  href="/user-dashboard/deposit"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Deposit
+                </Link>
+                <Link
+                  href="/user-dashboard/deposit-list"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Withdraw
+                </Link>
+                <Link
+                  href="/user-dashboard/owned-nfts"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Owned NFTs
                 </Link>
                 {isAuthenticated && (
                   <button

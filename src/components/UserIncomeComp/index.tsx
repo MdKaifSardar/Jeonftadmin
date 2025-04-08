@@ -75,12 +75,14 @@ const UserIncomeComp = () => {
   if (loading) return <Loader text="Loading income details..." />;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mt-4">
-      <h2 className="text-lg font-bold mb-4">Income Details</h2>
-      {error ? (
-        <p className="text-red-600 text-sm">{error}</p>
-      ) : income ? (
+    <div className="bg-white rounded-lg shadow-sm p-6">
+      {error || !income ? (
+        <p className="text-gray-600 text-center">
+          {error || "No income details available. Please try reloading or contact support."}
+        </p>
+      ) : (
         <>
+          <h2 className="text-lg font-bold mb-4">Income Details</h2>
           <p className="mb-2">
             <span className="font-medium">ROI Income:</span>{" "}
             {income.roiIncome.toFixed(2)}%
@@ -106,7 +108,7 @@ const UserIncomeComp = () => {
             {(income.incomeAmount + income.referralIncomeAmount).toFixed(2)} ETH
           </p>
         </>
-      ) : null}
+      )}
     </div>
   );
 };

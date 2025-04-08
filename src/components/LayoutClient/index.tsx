@@ -33,7 +33,7 @@ const LayoutClient: React.FC<{ children: React.ReactNode }> = ({
   return (
     <>
       <Navbar isAuthenticated={isAuthenticated} />
-      {children}
+      <div className="w-full h-fit mt-[6rem]">{children}</div>
       <Footer />
     </>
   );

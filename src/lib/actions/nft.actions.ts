@@ -4,6 +4,7 @@ import cloudinary from "cloudinary";
 import { connectToDatabase } from "../database/db";
 import NFT, { INFT } from "../models/nftModel";
 import mongoose from "mongoose";
+import { getUserById } from "@/lib/actions/user.actions";
 
 // Configure Cloudinary
 cloudinary.v2.config({
@@ -53,7 +54,8 @@ export const createNFT = async (nftData: CreateNFTData) => {
     const nft = new NFT(nftObject);
     await nft.save();
 
-    return { success: true, data: nft };
+    const plainNFT = JSON.parse(JSON.stringify(nft));
+    return { success: true, data: plainNFT };
   } catch (error) {
     console.error("Error creating NFT:", error);
     return { success: false, error: "Failed to create NFT" };
@@ -64,8 +66,14 @@ export const createNFT = async (nftData: CreateNFTData) => {
 export const getAllNFTs = async () => {
   try {
     await connectToDatabase();
-    const nfts = await NFT.find();
-    return { success: true, data: nfts };
+    // Only fetch NFTs available for purchase (no owner)
+    const nfts = await NFT.find({ owner: { $exists: false } }).lean();
+    const plainNFTs = nfts.map((nft) => ({
+      ...nft,
+      _id: nft._id.toString(),
+      collectionName: nft.collectionName.toString(),
+    }));
+    return { success: true, data: plainNFTs };
   } catch (error) {
     console.error("Error fetching NFTs:", error);
     return { success: false, error: "Failed to fetch NFTs" };
@@ -76,11 +84,16 @@ export const getAllNFTs = async () => {
 export const getNFTById = async (id: string) => {
   try {
     await connectToDatabase();
-    const nft = await NFT.findById(id);
+    const nft = await NFT.findById(id).lean();
     if (!nft) {
       return { success: false, error: "NFT not found" };
     }
-    return { success: true, data: nft };
+    const plainNFT = {
+      ...nft,
+      _id: nft._id.toString(),
+      collectionName: nft.collectionName.toString(),
+    };
+    return { success: true, data: plainNFT };
   } catch (error) {
     console.error("Error fetching NFT:", error);
     return { success: false, error: "Failed to fetch NFT" };
@@ -137,7 +150,10 @@ export const updateNFT = async (
       { new: true }
     );
 
-    return { success: true, data: updatedNFT };
+    const plainNFT = updatedNFT
+      ? JSON.parse(JSON.stringify(updatedNFT))
+      : null;
+    return { success: true, data: plainNFT };
   } catch (error) {
     console.error("Error updating NFT:", error);
     return { success: false, error: "Failed to update NFT" };
@@ -159,9 +175,142 @@ export const deleteNFT = async (id: string) => {
       await cloudinary.v2.uploader.destroy(nft.image.public_id);
     }
 
-    return { success: true, data: nft };
+    const plainNFT = JSON.parse(JSON.stringify(nft));
+    return { success: true, data: plainNFT };
   } catch (error) {
     console.error("Error deleting NFT:", error);
     return { success: false, error: "Failed to delete NFT" };
+  }
+};
+
+export const getNFTsByCollection = async (collectionId: string) => {
+  try {
+    await connectToDatabase();
+    const nfts = await NFT.find({
+      collectionName: new mongoose.Types.ObjectId(collectionId),
+    }).lean();
+    const plainNFTs = nfts.map((nft) => ({
+      ...nft,
+      _id: nft._id.toString(),
+      collectionName: nft.collectionName.toString(),
+    }));
+    return { success: true, data: plainNFTs };
+  } catch (error) {
+    console.error("Error fetching NFTs by collection:", error);
+    return { success: false, error: "Failed to fetch NFTs for the collection" };
+  }
+};
+
+export const buyNFT = async (nftId: string, userId: string) => {
+  try {
+    await connectToDatabase();
+
+    // Fetch the NFT without using .lean() to allow save()
+    const nft = await NFT.findById(nftId) as mongoose.Document & INFT;
+    if (!nft) {
+      return { success: false, error: "NFT not found." };
+    }
+    if (nft.owner) {
+      return { success: false, error: "NFT already sold." };
+    }
+
+    // Fetch the user and ensure sufficient balance exists
+    const userResult = await getUserById(userId);
+    if (!userResult.success || !userResult.data) {
+      return { success: false, error: "User not found." };
+    }
+    const user = userResult.data;
+    if (!user.totalBalance || user.totalBalance < nft.price) {
+      return { success: false, error: "Insufficient balance." };
+    }
+
+    // Deduct the NFT price from the user's totalBalance
+    const balanceUpdateResult = await updateUserBalanceByPurchase(userId, nft.price);
+    if (!balanceUpdateResult.success) {
+      return {
+        success: false,
+        error: balanceUpdateResult.error || "Failed to update user's balance.",
+      };
+    }
+
+    // Mark NFT as sold by setting its owner field and save the document
+    nft.owner = new mongoose.Types.ObjectId(userId);
+    await nft.save();
+
+    const plainNFT = JSON.parse(JSON.stringify(nft));
+    return { success: true, data: { nftId: plainNFT._id } };
+  } catch (error: any) {
+    console.error("Error buying NFT:", error);
+    return { success: false, error: error.message || "Failed to buy NFT." };
+  }
+};
+
+export const getOwnedNFTs = async (userId: string) => {
+  try {
+    await connectToDatabase();
+    // Validate that userId is a valid ObjectId string
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return { success: false, error: "Invalid user ID format." };
+    }
+    const nfts = await NFT.find({ owner: new mongoose.Types.ObjectId(userId) }).lean(); // Use .lean() to return plain objects
+    const plainNFTs = nfts.map((nft) => ({
+      ...nft,
+      _id: nft._id.toString(),
+      collectionName: nft.collectionName.toString(),
+    }));
+    return { success: true, data: plainNFTs }; // Ensure plain objects are returned
+  } catch (error) {
+    console.error("Error fetching owned NFTs:", error);
+    return { success: false, error: "Failed to fetch owned NFTs" };
+  }
+};
+
+async function updateUserBalanceByPurchase(
+  userId: string,
+  price: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await connectToDatabase();
+    const updatedUser = await mongoose.connection
+      .collection("users")
+      .findOneAndUpdate(
+        { _id: new mongoose.Types.ObjectId(userId) },
+        { $inc: { totalBalance: -price } },
+        { returnDocument: "after" }
+      );
+
+    if (!updatedUser) {
+      return { success: false, error: "Failed to update user balance" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user balance:", error);
+    return { success: false, error: "Failed to update user balance" };
+  }
+}
+
+export const searchNFTs = async (keyword: string) => {
+  try {
+    await connectToDatabase();
+
+    // Perform a case-insensitive search on the name and description fields
+    const nfts = await NFT.find({
+      $or: [
+        { name: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+      ],
+    }).lean();
+
+    const plainNFTs = nfts.map((nft) => ({
+      ...nft,
+      _id: nft._id.toString(),
+      collectionName: nft.collectionName.toString(),
+    }));
+
+    return { success: true, data: plainNFTs };
+  } catch (error) {
+    console.error("Error searching NFTs:", error);
+    return { success: false, error: "Failed to search NFTs" };
   }
 };

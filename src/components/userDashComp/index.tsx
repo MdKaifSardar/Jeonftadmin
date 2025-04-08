@@ -20,12 +20,15 @@ const UserDashComp = () => {
   const [walletLoading, setWalletLoading] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [userError, setUserError] = useState<string>("");
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.error("User ID not found. Please log in again.");
+        setUserError("User ID not found. Please log in again.");
+        setIsLoading(false);
         return;
       }
 
@@ -35,8 +38,10 @@ const UserDashComp = () => {
 
       if (response.success) {
         setUserDetails(response.user);
+        setUserError("");
       } else {
         toast.error(response.error);
+        setUserError(response.error || "Failed to fetch user details.");
       }
     };
 
@@ -125,34 +130,43 @@ const UserDashComp = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <Loader text="Loading user details..." />
             </div>
-          ) : (
-            userDetails && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-bold mb-4">User Details</h2>
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Email:</span>
-                    <span className="text-gray-700">{userDetails.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Username:</span>
-                    <span className="text-gray-700">{userDetails.username}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Your Referral Code:</span>
-                    <span className="text-gray-700">
-                      {userDetails.userReferralCode}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Used Referral Code:</span>
-                    <span className="text-gray-700">
-                      {userDetails.usedReferralCode || "None"}
-                    </span>
-                  </div>
+          ) : userError ? (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <p className="text-gray-600 text-center">{userError}</p>
+            </div>
+          ) : userDetails ? (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              {/* ...existing user details rendering... */}
+              <h2 className="text-lg font-bold mb-4">User Details</h2>
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between">
+                  <span className="font-medium">Email:</span>
+                  <span className="text-gray-700">{userDetails.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Username:</span>
+                  <span className="text-gray-700">{userDetails.username}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Your Referral Code:</span>
+                  <span className="text-gray-700">
+                    {userDetails.userReferralCode}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Used Referral Code:</span>
+                  <span className="text-gray-700">
+                    {userDetails.usedReferralCode || "None"}
+                  </span>
                 </div>
               </div>
-            )
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <p className="text-gray-600 text-center">
+                No user details available. Please try reloading or contact support.
+              </p>
+            </div>
           )}
 
           {/* Income Details Box */}

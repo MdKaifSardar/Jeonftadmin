@@ -45,8 +45,9 @@ export const createCollection = async (collectionData: CreateCollectionData) => 
     // Save to MongoDB
     const collection = new Collection(collectionObject);
     await collection.save();
+    const plainCollection = JSON.parse(JSON.stringify(collection));
 
-    return { success: true, data: collection };
+    return { success: true, data: plainCollection };
   } catch (error) {
     console.error("Error creating collection:", error);
     return { success: false, error: "Failed to create collection" };
@@ -57,8 +58,13 @@ export const createCollection = async (collectionData: CreateCollectionData) => 
 export const getAllCollections = async () => {
   try {
     await connectToDatabase();
-    const collections = await Collection.find();
-    return { success: true, data: collections };
+    const collections = await Collection.find().lean();
+    // Convert ObjectId fields to strings
+    const plainCollections = collections.map((col) => ({
+      ...col,
+      _id: col._id.toString(),
+    }));
+    return { success: true, data: plainCollections };
   } catch (error) {
     console.error("Error fetching collections:", error);
     return { success: false, error: "Failed to fetch collections" };
@@ -69,11 +75,15 @@ export const getAllCollections = async () => {
 export const getCollectionById = async (id: string) => {
   try {
     await connectToDatabase();
-    const collection = await Collection.findById(id);
+    const collection = await Collection.findById(id).lean();
     if (!collection) {
       return { success: false, error: "Collection not found" };
     }
-    return { success: true, data: collection };
+    const plainCollection = {
+      ...collection,
+      _id: collection._id.toString(),
+    };
+    return { success: true, data: plainCollection };
   } catch (error) {
     console.error("Error fetching collection:", error);
     return { success: false, error: "Failed to fetch collection" };
@@ -120,8 +130,11 @@ export const updateCollection = async (
       { name: collectionData.name, image: updatedImage },
       { new: true }
     );
+    const plainCollection = updatedCollection
+      ? JSON.parse(JSON.stringify(updatedCollection))
+      : null;
 
-    return { success: true, data: updatedCollection };
+    return { success: true, data: plainCollection };
   } catch (error) {
     console.error("Error updating collection:", error);
     return { success: false, error: "Failed to update collection" };
@@ -143,7 +156,9 @@ export const deleteCollection = async (id: string) => {
       await cloudinary.v2.uploader.destroy(collection.image.public_id);
     }
 
-    return { success: true, data: collection };
+    const plainCollection = JSON.parse(JSON.stringify(collection));
+
+    return { success: true, data: plainCollection };
   } catch (error) {
     console.error("Error deleting collection:", error);
     return { success: false, error: "Failed to delete collection" };
