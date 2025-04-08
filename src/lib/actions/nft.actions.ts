@@ -62,17 +62,18 @@ export const createNFT = async (nftData: CreateNFTData) => {
   }
 };
 
-// Get all NFTs
+const convertNFTToPlainObject = (nft: any) => ({
+  ...nft,
+  _id: nft._id.toString(),
+  collectionName: nft.collectionName.toString(),
+  owner: nft.owner ? nft.owner.toString() : null, // Convert owner to string or null
+});
+
 export const getAllNFTs = async () => {
   try {
     await connectToDatabase();
-    // Only fetch NFTs available for purchase (no owner)
-    const nfts = await NFT.find({ owner: { $exists: false } }).lean();
-    const plainNFTs = nfts.map((nft) => ({
-      ...nft,
-      _id: nft._id.toString(),
-      collectionName: nft.collectionName.toString(),
-    }));
+    const nfts = await NFT.find({}).lean();
+    const plainNFTs = nfts.map(convertNFTToPlainObject);
     return { success: true, data: plainNFTs };
   } catch (error) {
     console.error("Error fetching NFTs:", error);
@@ -88,11 +89,7 @@ export const getNFTById = async (id: string) => {
     if (!nft) {
       return { success: false, error: "NFT not found" };
     }
-    const plainNFT = {
-      ...nft,
-      _id: nft._id.toString(),
-      collectionName: nft.collectionName.toString(),
-    };
+    const plainNFT = convertNFTToPlainObject(nft);
     return { success: true, data: plainNFT };
   } catch (error) {
     console.error("Error fetching NFT:", error);
@@ -189,11 +186,7 @@ export const getNFTsByCollection = async (collectionId: string) => {
     const nfts = await NFT.find({
       collectionName: new mongoose.Types.ObjectId(collectionId),
     }).lean();
-    const plainNFTs = nfts.map((nft) => ({
-      ...nft,
-      _id: nft._id.toString(),
-      collectionName: nft.collectionName.toString(),
-    }));
+    const plainNFTs = nfts.map(convertNFTToPlainObject);
     return { success: true, data: plainNFTs };
   } catch (error) {
     console.error("Error fetching NFTs by collection:", error);
@@ -253,11 +246,7 @@ export const getOwnedNFTs = async (userId: string) => {
       return { success: false, error: "Invalid user ID format." };
     }
     const nfts = await NFT.find({ owner: new mongoose.Types.ObjectId(userId) }).lean(); // Use .lean() to return plain objects
-    const plainNFTs = nfts.map((nft) => ({
-      ...nft,
-      _id: nft._id.toString(),
-      collectionName: nft.collectionName.toString(),
-    }));
+    const plainNFTs = nfts.map(convertNFTToPlainObject);
     return { success: true, data: plainNFTs }; // Ensure plain objects are returned
   } catch (error) {
     console.error("Error fetching owned NFTs:", error);
@@ -301,13 +290,7 @@ export const searchNFTs = async (keyword: string) => {
         { description: { $regex: keyword, $options: "i" } },
       ],
     }).lean();
-
-    const plainNFTs = nfts.map((nft) => ({
-      ...nft,
-      _id: nft._id.toString(),
-      collectionName: nft.collectionName.toString(),
-    }));
-
+    const plainNFTs = nfts.map(convertNFTToPlainObject);
     return { success: true, data: plainNFTs };
   } catch (error) {
     console.error("Error searching NFTs:", error);
