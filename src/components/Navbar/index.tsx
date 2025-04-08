@@ -117,7 +117,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
 
         {/* Right Section - Icons & Menu */}
         <div className="flex items-center gap-6">
-          <Link href="/announcements" className="relative cursor-pointer">
+          <Link href="/user-dashboard/user-rewards" className="relative cursor-pointer">
             <Bell className="w-6 h-6" />
             <span className="absolute top-0 right-0 bg-red-500 w-2 h-2 rounded-full"></span>
           </Link>
@@ -177,6 +177,12 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
                   Withdraw
+                </Link>
+                <Link
+                  href="/user-dashboard/user-rewards"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Rewards
                 </Link>
                 <Link
                   href="/user-dashboard/owned-nfts"
