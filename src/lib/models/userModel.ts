@@ -4,9 +4,18 @@ export interface IUser extends Document {
   email: string;
   username: string;
   password: string;
-  referralCode?: string; // Optional field
-  userReferralCode: string; // Unique referral code for the user
-  walletId?: mongoose.Types.ObjectId; // Optional field to link to a wallet
+  referralCode?: string;
+  userReferralCode: string;
+  walletId?: mongoose.Types.ObjectId;
+  walletAddress?: string;
+  balance: number;
+  referralAdded?: boolean;
+  lastIncomeUpdate?: Date;
+  incomeAmount?: number;
+  referralIncome?: number; // ✅ NEW
+  totalBalance?: number;   // ✅ NEW
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -16,6 +25,15 @@ const UserSchema = new Schema<IUser>({
   referralCode: { type: String },
   userReferralCode: { type: String, required: true, unique: true },
   walletId: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet" },
+  walletAddress: { type: String },
+  balance: { type: Number, default: 0 },
+  referralAdded: { type: Boolean, default: false },
+  lastIncomeUpdate: { type: Date, default: null },
+  incomeAmount: { type: Number, default: 0 },
+  referralIncome: { type: Number, default: 0 },  // ✅ NEW
+  totalBalance: { type: Number, default: 0 },    // ✅ NEW
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 const User: Model<IUser> =
