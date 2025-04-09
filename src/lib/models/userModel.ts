@@ -9,11 +9,12 @@ export interface IUser extends Document {
   walletId?: mongoose.Types.ObjectId;
   walletAddress?: string;
   balance: number;
-  referralAdded?: boolean;
   lastIncomeUpdate?: Date;
   incomeAmount?: number;
-  referralIncome?: number; // ✅ NEW
-  totalBalance?: number;   // ✅ NEW
+  referralIncome?: number;
+  totalBalance?: number;
+  ethBalance: number; // New field for ETH balance
+  rsBalance: number; // New field for INR balance
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,11 +28,12 @@ const UserSchema = new Schema<IUser>({
   walletId: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet" },
   walletAddress: { type: String },
   balance: { type: Number, default: 0 },
-  referralAdded: { type: Boolean, default: false },
   lastIncomeUpdate: { type: Date, default: null },
   incomeAmount: { type: Number, default: 0 },
-  referralIncome: { type: Number, default: 0 },  // ✅ NEW
-  totalBalance: { type: Number, default: 0 },    // ✅ NEW
+  referralIncome: { type: Number, default: 0 },
+  totalBalance: { type: Number, default: 0 },
+  ethBalance: { type: Number, default: 0 }, // New field
+  rsBalance: { type: Number, default: 0 }, // New field
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

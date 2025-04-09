@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getDeposits } from "@/lib/actions/deposit.actions";
 import { createWithdraw } from "@/lib/actions/withdraw.actions";
+import { convertEthToRs } from "@/lib/actions/user.actions";
 import Loader from "@/components/Loader";
 import { toast } from "react-toastify";
 
@@ -66,7 +67,16 @@ const DepositList = () => {
       if (!result.success) {
         setError(result.message || "Failed to fetch deposits.");
       } else {
-        setDeposits(result.data || []);
+        const depositsWithConvertedAmounts = await Promise.all(
+          (result.data ?? []).map(async (deposit: any) => {
+            if (deposit.unit === "rs") {
+              const amountInRs = await convertEthToRs(deposit.amount);
+              return { ...deposit, amount: amountInRs, unit: "rs" };
+            }
+            return deposit;
+          })
+        );
+        setDeposits(depositsWithConvertedAmounts || []);
         const withdrawnSet = new Set(
           (result.data ?? []).filter((deposit: any) => deposit.withdrawn).map((deposit: any) => deposit._id)
         );
@@ -125,7 +135,9 @@ const DepositList = () => {
               <div>
                 <p className="mb-2">
                   <span className="font-medium text-gray-700">Amount:</span>{" "}
-                  <span className="text-gray-900">{deposit.amount} ETH</span>
+                  <span className="text-gray-900">
+                    {deposit.amount} {deposit.unit ? deposit.unit.toUpperCase() : ""}
+                  </span>
                 </p>
                 <p className="mb-2">
                   <span className="font-medium text-gray-700">Status:</span>{" "}

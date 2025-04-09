@@ -10,6 +10,7 @@ import { getCookie } from "cookies-next";
 import { hashPassword } from "@/utils/bcrypt";
 import mongoose from "mongoose";
 import Reward from "../models/rewardModel";
+import axios from "axios";
 
 const serializeUser = (user: any) => {
   if (!user) return null;
@@ -332,6 +333,12 @@ export const updateUserBalance = async (
       return { success: false, message: "User not found." };
     }
 
+    // Use calculateUserBalance to update the balance field
+    const balanceResult = await calculateUserBalance(userId, user.ethBalance || 0, user.rsBalance || 0);
+    if (!balanceResult.success) {
+      throw new Error(balanceResult.message || "Failed to calculate user balance.");
+    }
+
     const todayString = new Date().toDateString();
     const lastUpdate = user.get("lastIncomeUpdate");
     const alreadyUpdatedToday =
@@ -409,9 +416,14 @@ export const addRewardToUserBalance = async (
       return { success: false, message: "Reward already received" };
     }
 
-    // ✅ Update user's actual balance field (not totalBalance)
-    user.balance = (user.balance || 0) + rewardAmount;
-    await user.save();
+    // Update user's ETH balance
+    const updatedEthBalance = (user.ethBalance || 0) + rewardAmount;
+
+    // Use calculateUserBalance to update the balance field
+    const balanceResult = await calculateUserBalance(userId, updatedEthBalance, user.rsBalance || 0);
+    if (!balanceResult.success) {
+      throw new Error(balanceResult.message || "Failed to calculate user balance.");
+    }
 
     // Mark reward as received
     reward.status = "received";
@@ -427,5 +439,75 @@ export const addRewardToUserBalance = async (
       success: false,
       message: error.message || "Internal Server Error",
     };
+  }
+};
+
+export const calculateUserBalance = async (
+  userId: string,
+  ethBalance: number,
+  rsBalance: number
+): Promise<{ success: boolean; message?: string }> => {
+  try {
+    await connectToDatabase();
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return { success: false, message: "User not found." };
+    }
+
+    // Update ethBalance and rsBalance
+    user.ethBalance = ethBalance;
+    user.rsBalance = rsBalance;
+
+    // Convert rsBalance to ETH
+    const rsBalanceInEth = await convertRsToEth(rsBalance);
+
+    // Update the balance field (ethBalance + converted rsBalance)
+    user.balance = ethBalance + rsBalanceInEth;
+
+    await user.save();
+
+    return { success: true, message: "User balance calculated and updated successfully." };
+  } catch (error: any) {
+    console.error("Error calculating user balance:", error);
+    return { success: false, message: error.message || "Error calculating user balance." };
+  }
+};
+
+const getLiveEthereumValueInINR = async (): Promise<number> => {
+  try {
+    const response = await axios.get(
+      "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=inr"
+    );
+    const ethToInr = response.data.ethereum.inr;
+    if (!ethToInr) {
+      throw new Error("Failed to fetch Ethereum value in INR.");
+    }
+    return ethToInr;
+  } catch (error) {
+    console.error("Error fetching live Ethereum value:", error);
+    throw new Error("Unable to fetch live Ethereum value.");
+  }
+};
+
+export const convertRsToEth = async (amountInRs: number): Promise<number> => {
+  try {
+    const ethToInr = await getLiveEthereumValueInINR();
+    const amountInEth = amountInRs / ethToInr;
+    return parseFloat(amountInEth.toFixed(8)); // Return up to 8 decimal places
+  } catch (error) {
+    console.error("Error converting INR to ETH:", error);
+    throw new Error("Conversion from INR to ETH failed.");
+  }
+};
+
+export const convertEthToRs = async (amountInEth: number): Promise<number> => {
+  try {
+    const ethToInr = await getLiveEthereumValueInINR();
+    const amountInRs = amountInEth * ethToInr;
+    return parseFloat(amountInRs.toFixed(2)); // Return up to 2 decimal places
+  } catch (error) {
+    console.error("Error converting ETH to INR:", error);
+    throw new Error("Conversion from ETH to INR failed.");
   }
 };

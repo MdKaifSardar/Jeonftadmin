@@ -6,7 +6,7 @@ import { getUserDetails } from "./user.actions";
 import mongoose from "mongoose";
 import { getFirstAdminWallet } from "./adminwallet.actions";
 
-export const createDeposit = async (userId: string, amount: number) => {
+export const createDeposit = async (userId: string, amount: number, unit: "eth" | "rs") => {
   try {
     await connectToDatabase();
 
@@ -32,9 +32,10 @@ export const createDeposit = async (userId: string, amount: number) => {
       amount,
       userId: new mongoose.Types.ObjectId(userId),
       walletId: userResponse.user.walletId,
-      adminWalletAddress: adminWalletResponse.data[0].wallet, // Use fetched admin wallet address
+      adminWalletAddress: adminWalletResponse.data[0].wallet,
       state: "pending",
-      withdrawn: false, // Add withdrawn field
+      withdrawn: false,
+      unit, // Set the unit (eth or rs)
     }) as any;
 
     await deposit.save();
@@ -45,7 +46,7 @@ export const createDeposit = async (userId: string, amount: number) => {
       data: {
         depositId: deposit._id.toString(),
         amount,
-        adminWalletAddress: adminWalletResponse.data[0].wallet, // Return fetched admin wallet address
+        adminWalletAddress: adminWalletResponse.data[0].wallet,
       },
     };
   } catch (error: any) {
@@ -62,12 +63,10 @@ export const getDeposits = async (userId: string) => {
       return { success: false, message: "Invalid user ID format." };
     }
 
-    // Use lean() to convert Mongoose Documents to plain objects.
     const deposits = await Deposit.find({ userId: userId })
       .sort({ createdAt: -1 })
-      .lean();
+      .lean(); // Use lean() to convert Mongoose Documents to plain objects
 
-    // Optionally, convert any ObjectId fields to string if needed
     const plainDeposits = deposits.map((deposit) => ({
       ...deposit,
       _id: deposit._id.toString(),
@@ -78,7 +77,7 @@ export const getDeposits = async (userId: string) => {
     return {
       success: true,
       message: "Deposits fetched successfully.",
-      data: plainDeposits,
+      data: plainDeposits, // Ensure plain objects are returned
     };
   } catch (error: any) {
     console.error("Error fetching deposits:", error);

@@ -167,10 +167,16 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                   Wallet
                 </Link>
                 <Link
-                  href="/user-dashboard/deposit"
+                  href="/user-dashboard/deposit-eth"
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
-                  Deposit
+                  Deposit Etherium
+                </Link>
+                <Link
+                  href="/user-dashboard/deposit-rs"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Deposit Rupees
                 </Link>
                 <Link
                   href="/user-dashboard/deposit-list"

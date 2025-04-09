@@ -85,27 +85,27 @@ const UserIncomeComp = () => {
           <h2 className="text-lg font-bold mb-4">Income Details</h2>
           <p className="mb-2">
             <span className="font-medium">ROI Income:</span>{" "}
-            {income.roiIncome.toFixed(2)}%
+            {income.roiIncome.toFixed(4)}%
           </p>
           <p className="mb-2">
             <span className="font-medium">Level Income:</span>{" "}
-            {income.levelIncome.toFixed(2)}%
+            {income.levelIncome.toFixed(4)}%
           </p>
           <p className="mb-2">
             <span className="font-medium">Referral Income:</span>{" "}
-            {income.referralIncome.toFixed(2)}%
+            {income.referralIncome.toFixed(4)}%
           </p>
           <p className="mb-2">
             <span className="font-medium">Balance:</span>{" "}
-            {income.balance.toFixed(2)} ETH
+            {income.balance.toFixed(4)} ETH
           </p>
           <p className="mb-2">
             <span className="font-medium">Total Balance:</span>{" "}
-            {income.totalBalance.toFixed(2)} ETH
+            {income.totalBalance.toFixed(4)} ETH
           </p>
           <p>
             <span className="font-medium">Total Income:</span>{" "}
-            {(income.incomeAmount + income.referralIncomeAmount).toFixed(2)} ETH
+            {(income.incomeAmount + income.referralIncomeAmount).toFixed(4)} ETH
           </p>
         </>
       )}

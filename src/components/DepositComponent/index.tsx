@@ -8,7 +8,7 @@ declare global {
 
 import { useState, useEffect } from "react";
 import { createDeposit } from "@/lib/actions/deposit.actions";
-import { getUserDetails } from "@/lib/actions/user.actions";
+import { getUserDetails, convertEthToRs } from "@/lib/actions/user.actions";
 import { toast } from "react-toastify";
 import Loader from "@/components/Loader";
 import { getFirstAdminWallet } from "@/lib/actions/adminwallet.actions";
@@ -26,6 +26,7 @@ const DepositComponent = () => {
   const [userBalance, setUserBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [adminWalletAddress, setAdminWalletAddress] = useState<string | null>(null);
+  const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchAdminWallet = async () => {
@@ -73,6 +74,21 @@ const DepositComponent = () => {
     };
     initializeBalance();
   }, []);
+
+  const handleAmountChange = async (value: string) => {
+    setAmount(value);
+    if (value && parseFloat(value) > 0) {
+      try {
+        const converted = await convertEthToRs(parseFloat(value));
+        setConvertedAmount(converted);
+      } catch (error) {
+        console.error("Error converting ETH to INR:", error);
+        setConvertedAmount(null);
+      }
+    } else {
+      setConvertedAmount(null);
+    }
+  };
 
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,8 +169,8 @@ const DepositComponent = () => {
         throw new Error("Transaction failed - check your wallet for details");
       }
 
-      // Create deposit record
-      const depositResponse = await createDeposit(userId, parseFloat(amount));
+      // Create deposit record with unit as 'eth'
+      const depositResponse = await createDeposit(userId, parseFloat(amount), "eth");
       if (!depositResponse.success) {
         throw new Error(
           "Transaction successful but failed to record deposit. Please contact support."
@@ -212,32 +228,6 @@ const DepositComponent = () => {
     });
   };
 
-  const getCurrencyLabel = () => NETWORK.symbol;
-
-  const handleDemoDeposit = async () => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      toast.error("User not logged in.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Using a hardcoded demo amount; adjust as necessary
-      const result = await createDeposit(userId, 100);
-      if (result.success) {
-        toast.success("Demo deposit created successfully!");
-      } else {
-        toast.error(result.message || "Failed to create deposit.");
-      }
-    } catch (error) {
-      console.error("Error creating deposit:", error);
-      toast.error("Error creating deposit.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (isLoading) {
     return <Loader text="Processing deposit..." />;
   }
@@ -293,7 +283,7 @@ const DepositComponent = () => {
             htmlFor="amount"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Amount ({getCurrencyLabel()})
+            Amount (ETH)
           </label>
           <div className="relative">
             <input
@@ -303,12 +293,17 @@ const DepositComponent = () => {
               min="0.01"
               max={userBalance || undefined}
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
               required
             />
             <div className="mt-1 text-sm text-gray-500">
-              <div>Minimum deposit: 0.01 {getCurrencyLabel()}</div>
+              <div>Minimum deposit: 0.01 ETH</div>
+              {convertedAmount !== null && (
+                <div className="text-gray-700">
+                  Equivalent in INR: ₹{convertedAmount.toFixed(2)}
+                </div>
+              )}
               {userBalance && parseFloat(amount) > parseFloat(userBalance) && (
                 <div className="text-red-500">
                   Amount exceeds available balance
@@ -343,25 +338,6 @@ const DepositComponent = () => {
           Deposit
         </button>
       </form>
-
-      {amount && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">
-            Estimated rewards after 180 days:{" "}
-            {((parseFloat(amount) * 0.12) / 2).toFixed(4)} {getCurrencyLabel()}
-          </p>
-        </div>
-      )}
-
-      {/* <div className="w-full flex flex-col justify-center items-center space-y-4 mt-6">
-        <button
-          onClick={handleDemoDeposit}
-          disabled={loading}
-          className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none"
-        >
-          {loading ? "Processing..." : "Create Demo Deposit"}
-        </button>
-      </div> */}
     </div>
   );
 };
