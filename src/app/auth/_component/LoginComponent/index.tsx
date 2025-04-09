@@ -41,7 +41,7 @@ const LoginComponent: React.FC = () => {
               <Image
                 width={100}
                 height={100}
-                src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743186960/collection-images/zph5ehraactocpnqqnfh.jpg"
+                src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1744097716/jeonft_logo_new_zgpy5x.jpg"
                 alt="NFT"
                 className="rounded-2xl"
               />

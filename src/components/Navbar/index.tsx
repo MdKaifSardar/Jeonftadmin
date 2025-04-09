@@ -194,7 +194,8 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                   <button
                     onClick={() => {
                       localStorage.removeItem("token"); // Remove token from localStorage
-                      window.location.reload(); // Reload the page
+                      localStorage.removeItem("userId"); // Remove userId from localStorage
+                      router.push("/"); // Redirect to the home page
                     }}
                     className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                   >

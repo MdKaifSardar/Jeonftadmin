@@ -193,7 +193,7 @@ const UserDashComp = () => {
                     {walletDetails.balance} ETH
                   </span>
                 </div>
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span className="font-medium">Token Balance:</span>
                   <span className="text-gray-700">
                     {walletDetails.tokenBalance || 0} JNFT
@@ -204,7 +204,7 @@ const UserDashComp = () => {
                   <span className="text-gray-700">
                     {walletDetails.transactionCount || 0}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           ) : (
