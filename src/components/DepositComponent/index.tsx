@@ -17,7 +17,6 @@ const NETWORK = {
   chainId: "0x1",
   name: "Ethereum Mainnet",
   symbol: "ETH",
-  adminWallet: process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS,
 };
 
 const DepositComponent = () => {
@@ -117,10 +116,6 @@ const DepositComponent = () => {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-
-      if (!NETWORK.adminWallet) {
-        throw new Error("Admin wallet not configured");
-      }
 
       // Validate amount against balance
       if (!userBalance || parseFloat(amount) > parseFloat(userBalance)) {
