@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { login } from "@/lib/actions/auth/login.actions";
+import { toast } from "react-toastify";
 
 interface TreasureNFTLoginModalProps {
   onClose: () => void;
@@ -11,13 +13,27 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({
   onClose,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleConfirm = () => {
-    console.log("Username:", username);
-    console.log("Password:", password);
-    alert("Login Confirmed!");
+  const handleConfirm = async () => {
+    try {
+      const response = await login(email, password);
+      if (response.success) {
+        if (response.token) {
+          localStorage.setItem("token", response.token); // Save token in localStorage
+        }
+        if (response.userId) {
+          localStorage.setItem("userId", String(response.userId)); // Save userId to localStorage
+        }
+        toast.success(response.message);
+        onClose(); // Close the modal on successful login
+      } else {
+        toast.error(response.error);
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred.");
+    }
   };
 
   return (
@@ -48,24 +64,15 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({
             Log in
           </h1>
 
-          <div className="mb-6">
-            <button
-              className="w-full border-2 border-blue-900 rounded-lg p-3 flex items-center justify-center text-gray-600 hover:bg-gray-50"
-              onClick={() => alert("Wallet Connect clicked!")}
-            >
-              Wallet Connect &gt;
-            </button>
-          </div>
-
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-medium mb-1">
-              User name<span className="text-red-500">*</span>
+              Email<span className="text-red-500">*</span>
             </label>
             <input
-              type="text"
-              placeholder="User name"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
@@ -133,7 +140,7 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({
           </div>
 
           <div className="text-center">
-            <span className="text-gray-600">Dont have an account? </span>
+            <span className="text-gray-600">Don't have an account? </span>
             <button
               className="text-blue-900 hover:underline"
               onClick={() => alert("Sign up clicked!")}
