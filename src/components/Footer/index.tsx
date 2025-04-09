@@ -111,7 +111,7 @@ const Footer: React.FC = () => {
       <button className="hidden md:fixed bottom-6 right-6 bg-gradient-to-r from-blue-400 to-green-300 text-white rounded-full p-4 shadow-lg">
         <span className="flex items-center gap-2">
           <span className="text-xl">💬</span>
-          <span>Help</span>
+          <span>help</span>
         </span>
       </button>
 
