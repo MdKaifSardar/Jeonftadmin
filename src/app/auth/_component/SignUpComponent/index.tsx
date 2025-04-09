@@ -40,7 +40,7 @@ const SignUpComponent: React.FC = () => {
   };
 
   return (
-    <div className="p-[2rem] mt-[4rem] gap-[.5rem] flex flex-col md:flex-row w-full h-full justify-center items-center bg-gray-100">
+    <div className="p-[2rem] gap-[.5rem] flex flex-col md:flex-row w-full h-full justify-center items-center bg-gray-100">
       <div className="bg-white shadow-lg p-[2rem] rounded-[2rem] flex items-center justify-center w-full md:w-1/2">
         <form onSubmit={handleSubmit} className="w-full">
           <div className="flex flex-col items-center mb-8">

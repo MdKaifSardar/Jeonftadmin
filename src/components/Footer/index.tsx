@@ -116,7 +116,7 @@ const Footer: React.FC = () => {
       </button>
 
       {/* Mobile Navigation Bar - Centered */}
-      <div className="fixed md:hidden bottom-10 left-0 right-0 mx-auto w-full max-w-md px-2">
+      {/* <div className="fixed md:hidden bottom-10 left-0 right-0 mx-auto w-full max-w-md px-2">
         <div className="flex flex-wrap text-gray-400 font-light items-center justify-between text-lg p-3 bg-gray-100 rounded-full shadow-2xl shadow-black">
           <Link href="/stake" className="pl-2 cursor-pointer">
             Stake
@@ -140,7 +140,7 @@ const Footer: React.FC = () => {
             My
           </Link>
         </div>
-      </div>
+      </div> */}
     </footer>
   );
 };
