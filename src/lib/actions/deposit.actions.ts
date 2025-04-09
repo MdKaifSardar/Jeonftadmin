@@ -34,6 +34,7 @@ export const createDeposit = async (userId: string, amount: number) => {
       walletId: userResponse.user.walletId,
       adminWalletAddress: adminWalletResponse.data[0].wallet, // Use fetched admin wallet address
       state: "pending",
+      withdrawn: false, // Add withdrawn field
     }) as any;
 
     await deposit.save();

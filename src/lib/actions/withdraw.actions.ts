@@ -4,6 +4,7 @@ import { connectToDatabase } from "../database/db";
 import Withdraw, { IWithdraw } from "../models/withdrawModel";
 import mongoose, { Document } from "mongoose";
 import { getFirstAdminWallet } from "./adminwallet.actions";
+import Deposit from "../models/depositModel"; // Import the Deposit model
 
 export const createWithdraw = async (
   depositId: string,
@@ -17,6 +18,16 @@ export const createWithdraw = async (
     if (!mongoose.Types.ObjectId.isValid(depositId)) {
       return { success: false, message: "Invalid deposit ID." };
     }
+
+    const deposit = await Deposit.findById(depositId);
+    if (!deposit) {
+      return { success: false, message: "Deposit not found." };
+    }
+
+    if (deposit.withdrawn) {
+      return { success: false, message: "This deposit has already been withdrawn." };
+    }
+
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return { success: false, message: "Invalid user ID." };
     }
@@ -45,6 +56,10 @@ export const createWithdraw = async (
     }) as Document<unknown, object, IWithdraw> & IWithdraw & { _id: mongoose.Types.ObjectId };
 
     await withdraw.save();
+
+    // Mark the deposit as withdrawn
+    deposit.withdrawn = true;
+    await deposit.save();
 
     return {
       success: true,

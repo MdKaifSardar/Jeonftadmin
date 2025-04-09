@@ -49,6 +49,7 @@ const getTimeRemaining = (createdAt: string) => {
 const DepositList = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [deposits, setDeposits] = useState<any[]>([]);
+  const [withdrawnDeposits, setWithdrawnDeposits] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,19 +67,21 @@ const DepositList = () => {
         setError(result.message || "Failed to fetch deposits.");
       } else {
         setDeposits(result.data || []);
+        const withdrawnSet = new Set(
+          (result.data ?? []).filter((deposit: any) => deposit.withdrawn).map((deposit: any) => deposit._id)
+        );
+        setWithdrawnDeposits(withdrawnSet);
       }
       setLoading(false);
     };
     fetchDeposits();
   }, []);
 
-  // Called when the user clicks withdraw on a deposit.
   const handleWithdraw = async (deposit: any) => {
     if (!userId) {
       toast.error("User is not logged in.");
       return;
     }
-    // Pass deposit.amount to createWithdraw so it matches the deposit.
     const result = await createWithdraw(
       deposit._id,
       userId,
@@ -87,7 +90,7 @@ const DepositList = () => {
     );
     if (result.success) {
       toast.success("Withdraw created successfully.");
-      // Optionally refresh deposits or trigger state updates as needed.
+      setWithdrawnDeposits((prev) => new Set(prev).add(deposit._id));
     } else {
       toast.error(result.message || "Failed to create withdraw.");
     }
@@ -151,24 +154,26 @@ const DepositList = () => {
                   </span>
                 </p>
               </div>
-              <div className="flex flex-col items-end space-y-2">
-                <button
-                  className={`px-4 py-2 rounded font-medium transition-colors ${
-                    isWithdrawEnabled(deposit.createdAt)
-                      ? "bg-blue-600 hover:bg-blue-700 text-white"
-                      : "bg-gray-400 text-gray-700 cursor-not-allowed"
-                  }`}
-                  disabled={!isWithdrawEnabled(deposit.createdAt)}
-                  onClick={() => handleWithdraw(deposit)}
-                >
-                  Withdraw
-                </button>
-                {!isWithdrawEnabled(deposit.createdAt) && (
-                  <p className="text-sm text-gray-600">
-                    {getTimeRemaining(deposit.createdAt)}
-                  </p>
-                )}
-              </div>
+              {deposit.state === "completed" && !withdrawnDeposits.has(deposit._id) && (
+                <div className="flex flex-col items-end space-y-2">
+                  <button
+                    className={`px-4 py-2 rounded font-medium transition-colors ${
+                      isWithdrawEnabled(deposit.createdAt)
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-gray-400 text-gray-700 cursor-not-allowed"
+                    }`}
+                    disabled={!isWithdrawEnabled(deposit.createdAt)}
+                    onClick={() => handleWithdraw(deposit)}
+                  >
+                    Withdraw
+                  </button>
+                  {!isWithdrawEnabled(deposit.createdAt) && (
+                    <p className="text-sm text-gray-600">
+                      {getTimeRemaining(deposit.createdAt)}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ))}
