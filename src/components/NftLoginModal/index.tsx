@@ -140,7 +140,7 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({
           </div>
 
           <div className="text-center">
-            <span className="text-gray-600">Don't have an account? </span>
+            <span className="text-gray-600">Don&apos;t have an account? </span>
             <button
               className="text-blue-900 hover:underline"
               onClick={() => alert("Sign up clicked!")}
