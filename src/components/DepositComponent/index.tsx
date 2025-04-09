@@ -11,6 +11,7 @@ import { createDeposit } from "@/lib/actions/deposit.actions";
 import { getUserDetails } from "@/lib/actions/user.actions";
 import { toast } from "react-toastify";
 import Loader from "@/components/Loader";
+import { getFirstAdminWallet } from "@/lib/actions/adminwallet.actions";
 
 const NETWORK = {
   chainId: "0x1",
@@ -25,6 +26,26 @@ const DepositComponent = () => {
   const [showWarning, setShowWarning] = useState(false);
   const [userBalance, setUserBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [adminWalletAddress, setAdminWalletAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAdminWallet = async () => {
+      try {
+        const result = await getFirstAdminWallet();
+        const walletData = Array.isArray(result.data) ? result.data[0] : result.data;
+        if (result.success && walletData?.walletAddress) {
+          setAdminWalletAddress(walletData.walletAddress);
+        } else {
+          toast.error(result.message || "Failed to fetch admin wallet address");
+        }
+      } catch (error) {
+        console.error("Error fetching admin wallet address:", error);
+        toast.error("Error fetching admin wallet address");
+      }
+    };
+
+    fetchAdminWallet();
+  }, []);
 
   const fetchUserBalance = async (address: string) => {
     try {
@@ -62,6 +83,11 @@ const DepositComponent = () => {
       // Check for MetaMask
       if (typeof window.ethereum === "undefined") {
         throw new Error("Please install MetaMask to make deposits");
+      }
+
+      // Check admin wallet address
+      if (!adminWalletAddress) {
+        throw new Error("Admin wallet address not configured");
       }
 
       // Check user login
@@ -108,7 +134,7 @@ const DepositComponent = () => {
       // Prepare transaction
       const transactionParameters = {
         from: userResponse.user.walletAddress,
-        to: NETWORK.adminWallet,
+        to: adminWalletAddress, // Use fetched admin wallet address
         value: "0x" + (parseFloat(amount) * 1e18).toString(16),
         gas: "0x5208", // 21000 gas
       };
@@ -229,12 +255,17 @@ const DepositComponent = () => {
       <div className="mb-6">
         <div className="p-3 rounded-lg border border-gray-200">
           <div className="font-medium text-sm">
+            Admin Wallet Address:
+            <span className="block text-gray-700 break-all">
+              {adminWalletAddress || "Loading..."}
+            </span>
+          </div>
+          <div className="font-medium text-sm mt-4">
             Current Network: {NETWORK.name}
           </div>
           <div className="text-xs text-gray-500">({NETWORK.symbol})</div>
           <div className="mt-2 text-sm text-gray-700">
-            Available Balance:{" "}
-            {userBalance ? `${userBalance} ETH` : "Loading..."}
+            Available Balance: {userBalance ? `${userBalance} ETH` : "Loading..."}
           </div>
         </div>
       </div>
