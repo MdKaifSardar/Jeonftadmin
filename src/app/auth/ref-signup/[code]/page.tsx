@@ -1,6 +1,6 @@
 import React from "react";
-import RefLogin from "@/components/RefSignup";
 import { ToastContainer } from "react-toastify";
+import RefSignup from "@/components/RefSignup";
 
 export default async function RefLoginPage({
   params,
@@ -12,7 +12,7 @@ export default async function RefLoginPage({
   return (
     <div className="w-full h-full">
       <ToastContainer />
-      <RefLogin referralCode={code} />
+      <RefSignup referralCode={code} />
     </div>
   );
 }

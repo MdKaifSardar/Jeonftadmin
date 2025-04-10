@@ -21,8 +21,14 @@ const RefSignup: React.FC<RefSignupProps> = ({ referralCode }) => {
     try {
       const response = await signup(email, username, password, referralCode); // Pass referralCode to the signup function
       if (response.success) {
+        if (response.token) {
+          localStorage.setItem("token", response.token); // Save token in localStorage
+        }
+        if (response.userId) {
+          localStorage.setItem("userId", String(response.userId)); // Save userId to localStorage
+        }
         toast.success(response.message);
-        router.push("/auth/login"); // Redirect to the login page
+        router.push("/"); // Redirect to the home page
       } else {
         toast.error(response.error);
       }
