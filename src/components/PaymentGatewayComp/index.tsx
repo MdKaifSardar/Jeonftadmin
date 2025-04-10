@@ -39,59 +39,69 @@ const PaymentGatewayComp = () => {
     }
   }, []);
 
-  const handlePayment = async () => {
+  const handlePayment = async (): Promise<string | null> => {
     try {
       if (!isRazorpayLoaded) {
         throw new Error("Razorpay SDK is not loaded. Please try again later.");
       }
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: parseFloat(amount) * 100, // Convert to paise
-        currency: "INR",
-        name: "JEO NFT",
-        description: "Deposit Payment",
-        image:
-          "https://res.cloudinary.com/dlly7wr0a/image/upload/v1744097716/jeonft_logo_new_zgpy5x.jpg",
-        handler: async (response: any) => {
-          if (response.razorpay_payment_id) {
-            toast.success("Payment successful!");
-            return true;
-          } else {
-            throw new Error("Payment failed. Please try again.");
-          }
-        },
-        prefill: {
-          name: "User",
-          email: "user@example.com",
-          contact: "9999999999",
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-
       return new Promise((resolve, reject) => {
-        razorpay.on("payment.success", (response: any) => {
-          resolve(response);
-        });
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: parseFloat(amount) * 100, // Convert to paise
+          currency: "INR",
+          name: "JEO NFT",
+          description: "Deposit Payment",
+          image:
+            "https://res.cloudinary.com/dlly7wr0a/image/upload/v1744097716/jeonft_logo_new_zgpy5x.jpg",
+          handler: (response: any) => {
+            if (response.razorpay_payment_id) {
+              toast.success("Payment successful!");
+              resolve(response.razorpay_payment_id); // Return payment ID
+            } else {
+              reject(new Error("Payment failed. Please try again."));
+            }
+          },
+          prefill: {
+            name: "User",
+            email: "user@example.com",
+            contact: "9999999999",
+          },
+          theme: {
+            color: "#3399cc",
+          },
+          modal: {
+            ondismiss: () => {
+              toast.info("Payment window was closed by the user.");
+              setIsLoading(false); // Stop the loader when the user manually closes the Razorpay window
+              reject(new Error("Payment window was closed by the user."));
+            },
+            confirm_close: true, // Optional: Show confirmation before closing
+          },
+        };
+
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+
         razorpay.on("payment.error", (response: any) => {
           toast.error(response.error.description || "Payment failed.");
-          // Do not stop the process here; let the user retry or cancel explicitly
+          razorpay.close(); // Ensure the Razorpay window closes on payment failure
+          setIsLoading(false); // Stop the loader
+          // setAmount(""); // Reset the amount to restart the deposit process
+          reject(new Error("Payment failed."));
         });
+
         razorpay.on("payment.cancel", () => {
           toast.info("Payment was canceled by the user.");
           setIsLoading(false); // Stop the loader when the user cancels
+          razorpay.close(); // Ensure the Razorpay window closes on cancellation
+          setAmount(""); // Reset the amount to restart the deposit process
           reject(new Error("Payment was canceled by the user."));
         });
       });
     } catch (error: any) {
       toast.error(error.message || "Payment failed.");
-      setIsLoading(false); // Ensure the loader stops on error
-      return false;
+      return null;
     }
   };
 
@@ -118,11 +128,9 @@ const PaymentGatewayComp = () => {
       }
 
       // Handle payment
-      const paymentSuccess = await handlePayment();
-      if (!paymentSuccess) {
-        throw new Error(
-          "Payment was not successful. Deposit creation aborted."
-        );
+      const paymentId = await handlePayment();
+      if (!paymentId) {
+        throw new Error("Payment was not successful. Deposit creation aborted.");
       }
 
       // Create deposit record with unit as 'rs'
@@ -141,7 +149,7 @@ const PaymentGatewayComp = () => {
     } catch (error: any) {
       toast.error(error.message || "Failed to process deposit");
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Ensure the loader stops after the process
     }
   };
 
@@ -151,7 +159,29 @@ const PaymentGatewayComp = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-bold mb-4">Make a Deposit (₹)</h2>
+      <h2 className="text-lg font-bold mb-4">Make a Deposit</h2>
+
+      <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h3 className="text-yellow-800 font-semibold mb-2">
+          Important Notice:
+        </h3>
+        <p className="text-sm text-yellow-700">
+          • Deposits are locked for a minimum period of 180 days
+          <br />
+          • Early withdrawal is not possible under any circumstances
+          <br />• After 180 days, you can withdraw your funds with accumulated
+          rewards
+        </p>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="text-md font-semibold mb-2">Benefits:</h3>
+        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+          <li>Earn up to 12% APY on your deposits</li>
+          <li>Automatic reward distribution</li>
+          <li>No maintenance fees</li>
+        </ul>
+      </div>
 
       <form onSubmit={handleDeposit} className="space-y-4">
         <div>
@@ -161,16 +191,21 @@ const PaymentGatewayComp = () => {
           >
             Amount (₹)
           </label>
-          <input
-            type="number"
-            id="amount"
-            step="1"
-            min="100"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-            required
-          />
+          <div className="relative">
+            <input
+              type="number"
+              id="amount"
+              step="1"
+              min="100"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+              required
+            />
+            <div className="mt-1 text-sm text-gray-500">
+              <div>Minimum deposit: ₹100</div>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center mb-4">

@@ -322,21 +322,15 @@ export const calculateMLMLevelIncome = async (
 
 export const updateUserBalance = async (
   userId: string,
-  roiIncome: number, // e.g. 1.5 for 1.5%
-  levelIncome: number, // e.g. 8, 5, or 2
-  referralIncome: number // e.g. 30 for 30%
+  roiIncome: number, // e.g., 1.5 for 1.5%
+  levelIncome: number, // e.g., 8, 5, or 2
+  referralIncome: number // e.g., 30 for 30%
 ) => {
   try {
     await connectToDatabase();
     const user = await User.findById(userId);
     if (!user) {
       return { success: false, message: "User not found." };
-    }
-
-    // Use calculateUserBalance to update the balance field
-    const balanceResult = await calculateUserBalance(userId, user.ethBalance || 0, user.rsBalance || 0);
-    if (!balanceResult.success) {
-      throw new Error(balanceResult.message || "Failed to calculate user balance.");
     }
 
     const todayString = new Date().toDateString();
@@ -416,14 +410,9 @@ export const addRewardToUserBalance = async (
       return { success: false, message: "Reward already received" };
     }
 
-    // Update user's ETH balance
-    const updatedEthBalance = (user.ethBalance || 0) + rewardAmount;
-
-    // Use calculateUserBalance to update the balance field
-    const balanceResult = await calculateUserBalance(userId, updatedEthBalance, user.rsBalance || 0);
-    if (!balanceResult.success) {
-      throw new Error(balanceResult.message || "Failed to calculate user balance.");
-    }
+    // ✅ Update user's actual balance field (not totalBalance)
+    user.balance = (user.balance || 0) + rewardAmount;
+    await user.save();
 
     // Mark reward as received
     reward.status = "received";
@@ -441,39 +430,6 @@ export const addRewardToUserBalance = async (
     };
   }
 };
-
-export const calculateUserBalance = async (
-  userId: string,
-  ethBalance: number,
-  rsBalance: number
-): Promise<{ success: boolean; message?: string }> => {
-  try {
-    await connectToDatabase();
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return { success: false, message: "User not found." };
-    }
-
-    // Update ethBalance and rsBalance
-    user.ethBalance = ethBalance;
-    user.rsBalance = rsBalance;
-
-    // Convert rsBalance to ETH
-    const rsBalanceInEth = await convertRsToEth(rsBalance);
-
-    // Update the balance field (ethBalance + converted rsBalance)
-    user.balance = ethBalance + rsBalanceInEth;
-
-    await user.save();
-
-    return { success: true, message: "User balance calculated and updated successfully." };
-  } catch (error: any) {
-    console.error("Error calculating user balance:", error);
-    return { success: false, message: error.message || "Error calculating user balance." };
-  }
-};
-
 const getLiveEthereumValueInINR = async (): Promise<number> => {
   try {
     const response = await axios.get(
@@ -509,5 +465,17 @@ export const convertEthToRs = async (amountInEth: number): Promise<number> => {
   } catch (error) {
     console.error("Error converting ETH to INR:", error);
     throw new Error("Conversion from ETH to INR failed.");
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    await connectToDatabase();
+    const users = await User.find();
+    const serializedUsers = users.map((user) => serializeUser(user));
+    return { success: true, data: serializedUsers };
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return { success: false, error: "Failed to fetch users" };
   }
 };

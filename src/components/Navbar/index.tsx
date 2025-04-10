@@ -182,7 +182,13 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                   href="/user-dashboard/deposit-list"
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
-                  Withdraw
+                  Deposit List
+                </Link>
+                <Link
+                  href="/user-dashboard/withdraw-list"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Withdraw List
                 </Link>
                 <Link
                   href="/user-dashboard/user-rewards"

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { getDeposits } from "@/lib/actions/deposit.actions";
 import { createWithdraw } from "@/lib/actions/withdraw.actions";
-import { convertEthToRs } from "@/lib/actions/user.actions";
 import Loader from "@/components/Loader";
 import { toast } from "react-toastify";
 
@@ -21,7 +20,7 @@ const getStateColor = (state: "pending" | "completed" | "failed") => {
 };
 
 // Returns true if 180 days have passed since createdAt.
-const isWithdrawEnabled = (createdAt: string) => {
+const isWithdrawEnabled = (createdAt: string): boolean => {
   const createdDate = new Date(createdAt);
   const diffDays =
     (new Date().getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -50,7 +49,6 @@ const getTimeRemaining = (createdAt: string) => {
 const DepositList = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [deposits, setDeposits] = useState<any[]>([]);
-  const [withdrawnDeposits, setWithdrawnDeposits] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,20 +65,7 @@ const DepositList = () => {
       if (!result.success) {
         setError(result.message || "Failed to fetch deposits.");
       } else {
-        const depositsWithConvertedAmounts = await Promise.all(
-          (result.data ?? []).map(async (deposit: any) => {
-            if (deposit.unit === "rs") {
-              const amountInRs = await convertEthToRs(deposit.amount);
-              return { ...deposit, amount: amountInRs, unit: "rs" };
-            }
-            return deposit;
-          })
-        );
-        setDeposits(depositsWithConvertedAmounts || []);
-        const withdrawnSet = new Set(
-          (result.data ?? []).filter((deposit: any) => deposit.withdrawn).map((deposit: any) => deposit._id)
-        );
-        setWithdrawnDeposits(withdrawnSet);
+        setDeposits(result.data || []);
       }
       setLoading(false);
     };
@@ -96,11 +81,11 @@ const DepositList = () => {
       deposit._id,
       userId,
       deposit.walletId,
-      deposit.amount
+      deposit.amount, // Pass the amount directly
+      deposit.unit // Pass the unit directly
     );
     if (result.success) {
       toast.success("Withdraw created successfully.");
-      setWithdrawnDeposits((prev) => new Set(prev).add(deposit._id));
     } else {
       toast.error(result.message || "Failed to create withdraw.");
     }
@@ -148,6 +133,16 @@ const DepositList = () => {
                   </span>
                 </p>
                 <p className="mb-2">
+                  <span className="font-medium text-gray-700">Withdrawn:</span>{" "}
+                  <span
+                    className={`capitalize ${
+                      deposit.withdrawn ? "text-green-600" : "text-gray-600"
+                    }`}
+                  >
+                    {deposit.withdrawn ? "Yes" : "No"}
+                  </span>
+                </p>
+                <p className="mb-2">
                   <span className="font-medium text-gray-700">
                     Admin Wallet:
                   </span>{" "}
@@ -166,7 +161,7 @@ const DepositList = () => {
                   </span>
                 </p>
               </div>
-              {deposit.state === "completed" && !withdrawnDeposits.has(deposit._id) && (
+              {deposit.state === "completed" && !deposit.withdrawn && (
                 <div className="flex flex-col items-end space-y-2">
                   <button
                     className={`px-4 py-2 rounded font-medium transition-colors ${

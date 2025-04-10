@@ -2,7 +2,7 @@
 
 import { connectToDatabase } from "../database/db";
 import Deposit from "../models/depositModel";
-import { getUserDetails, convertRsToEth } from "./user.actions";
+import { getUserDetails } from "./user.actions";
 import mongoose from "mongoose";
 import { getFirstAdminWallet } from "./adminwallet.actions";
 
@@ -24,27 +24,20 @@ export const createDeposit = async (userId: string, amount: number, unit: "eth" 
     }
 
     const adminWalletResponse = await getFirstAdminWallet();
-    if (!adminWalletResponse.success || !Array.isArray(adminWalletResponse.data) || !adminWalletResponse.data[0]?.wallet) {
+    if (!adminWalletResponse.success || !adminWalletResponse.data || 
+        (Array.isArray(adminWalletResponse.data) && !adminWalletResponse.data[0]?.walletAddress) ||
+        (!Array.isArray(adminWalletResponse.data) && !adminWalletResponse.data.walletAddress)) {
       return { success: false, message: "Admin wallet address not configured" };
     }
 
-    // Convert amount to ETH if the unit is 'rs'
-    let amountInEth = amount;
-    if (unit === "rs") {
-      amountInEth = await convertRsToEth(amount);
-      if (!amountInEth || amountInEth <= 0) {
-        return { success: false, message: "Failed to convert INR to ETH" };
-      }
-    }
-
     const deposit = new Deposit({
-      amount: amountInEth,
+      amount, // Save the amount as provided
       userId: new mongoose.Types.ObjectId(userId),
       walletId: userResponse.user.walletId,
-      adminWalletAddress: adminWalletResponse.data[0].wallet,
+      adminWalletAddress: Array.isArray(adminWalletResponse.data) ? adminWalletResponse.data[0].walletAddress : adminWalletResponse.data.walletAddress,
       state: "pending",
       withdrawn: false,
-      unit: "eth", // Always store the unit as 'eth' after conversion
+      unit, // Save the unit as provided (eth or rs)
     }) as any;
 
     await deposit.save();
@@ -54,8 +47,9 @@ export const createDeposit = async (userId: string, amount: number, unit: "eth" 
       message: "Deposit initiated successfully",
       data: {
         depositId: deposit._id.toString(),
-        amount: amountInEth,
-        adminWalletAddress: adminWalletResponse.data[0].wallet,
+        amount,
+        unit, // Return the unit as provided
+        adminWalletAddress: Array.isArray(adminWalletResponse.data) ? adminWalletResponse.data[0].walletAddress : adminWalletResponse.data.walletAddress,
       },
     };
   } catch (error: any) {

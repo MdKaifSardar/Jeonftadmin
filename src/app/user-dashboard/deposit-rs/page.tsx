@@ -3,7 +3,7 @@ import { ToastContainer } from "react-toastify";
 
 const DepositRsPage = () => {
   return (
-    <div className="mt-[6rem]">
+    <div className="mt-[6rem] w-full flex flex-col justify-center items-center">
       <ToastContainer />
       <PaymentGatewayComp />
     </div>

@@ -4,6 +4,19 @@ import { useEffect, useState } from "react";
 import { getWithdraws } from "@/lib/actions/withdraw.actions";
 import Loader from "@/components/Loader";
 
+const getStateColor = (state: "pending" | "completed" | "failed") => {
+  switch (state) {
+    case "completed":
+      return "text-green-600";
+    case "pending":
+      return "text-yellow-600";
+    case "failed":
+      return "text-red-600";
+    default:
+      return "text-gray-600";
+  }
+};
+
 const WithdrawComponent = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [withdraws, setWithdraws] = useState<any[]>([]);
@@ -57,11 +70,15 @@ const WithdrawComponent = () => {
           >
             <p className="mb-2">
               <span className="font-medium text-gray-700">Amount:</span>{" "}
-              <span className="text-gray-900">{withdraw.amount} ETH</span>
+              <span className="text-gray-900">
+                {withdraw.amount} {withdraw.unit ? withdraw.unit.toUpperCase() : ""}
+              </span>
             </p>
             <p className="mb-2">
-              <span className="font-medium text-gray-700">State:</span>{" "}
-              <span className="text-gray-900 capitalize">{withdraw.state}</span>
+              <span className="font-medium text-gray-700">Status:</span>{" "}
+              <span className={`capitalize ${getStateColor(withdraw.state)}`}>
+                {withdraw.state}
+              </span>
             </p>
             <p className="mb-2">
               <span className="font-medium text-gray-700">Deposit ID:</span>{" "}

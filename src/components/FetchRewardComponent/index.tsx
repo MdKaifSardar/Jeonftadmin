@@ -108,12 +108,12 @@ const UserRewards = () => {
           {rewards.map((reward) => (
             <li
               key={reward.rewardId}
-              className="w-full border p-4 rounded-md shadow-sm"
+              className="w-full bg-white p-4 rounded-lg shadow-md"
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-semibold">
-                    Amount: ₹{reward.amount.toFixed(2)}
+                  <p className="font-semibold text-blue-900">
+                    Amount: {reward.amount.toFixed(5)} ETH
                   </p>
                   <p className="text-sm text-gray-600">
                     Created on: {new Date(reward.createdAt).toLocaleString()}
@@ -132,7 +132,7 @@ const UserRewards = () => {
                 {/* ✅ Show "Receive" button only if status !== "received" */}
                 {reward.status !== "received" && (
                   <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                    className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                     onClick={() =>
                       handleReceive(reward.rewardId, reward.amount)
                     }

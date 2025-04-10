@@ -63,7 +63,7 @@ export const getFirstAdminWallet = async () => {
     if (!adminWallet) {
       return { success: false, message: "No admin wallet found" };
     }
-    return { success: true, data: adminWallet };
+    return { success: true, data: adminWallet }; // Return the wallet directly
   } catch (error: any) {
     console.error("Error fetching latest admin wallet:", error);
     return { success: false, message: error.message || "Unknown error" };

@@ -4,28 +4,19 @@ import { connectToDatabase } from "../database/db";
 import Withdraw, { IWithdraw } from "../models/withdrawModel";
 import mongoose, { Document } from "mongoose";
 import { getFirstAdminWallet } from "./adminwallet.actions";
-import Deposit from "../models/depositModel"; // Import the Deposit model
 
 export const createWithdraw = async (
   depositId: string,
   userId: string,
   walletId: string,
-  amount: number
+  amount: number,
+  unit: "eth" | "rs" // Accept unit as a parameter
 ) => {
   try {
     await connectToDatabase();
 
     if (!mongoose.Types.ObjectId.isValid(depositId)) {
       return { success: false, message: "Invalid deposit ID." };
-    }
-
-    const deposit = await Deposit.findById(depositId);
-    if (!deposit) {
-      return { success: false, message: "Deposit not found." };
-    }
-
-    if (deposit.withdrawn) {
-      return { success: false, message: "This deposit has already been withdrawn." };
     }
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -36,18 +27,24 @@ export const createWithdraw = async (
     }
 
     const adminWalletResponse = await getFirstAdminWallet();
-    const adminWallet = Array.isArray(adminWalletResponse.data) ? adminWalletResponse.data[0] : adminWalletResponse.data;
+    const adminWallet = Array.isArray(adminWalletResponse.data)
+      ? adminWalletResponse.data[0]
+      : adminWalletResponse.data;
     if (!adminWalletResponse.success || !adminWallet?.walletAddress) {
       return { success: false, message: "Admin wallet address not configured" };
     }
 
     const existingWithdraw = await Withdraw.findOne({ depositId: depositId });
-    if (existingWithdraw) {
-      return { success: false, message: "Withdraw already exists for this deposit." };
+    if (existingWithdraw && existingWithdraw.state !== "failed") {
+      return {
+        success: false,
+        message: "A withdraw already exists for this deposit and is not failed.",
+      };
     }
 
     const withdraw = new Withdraw({
-      amount,
+      amount, // Use the amount passed as a parameter
+      unit, // Use the unit passed as a parameter
       userId: new mongoose.Types.ObjectId(userId),
       walletId: new mongoose.Types.ObjectId(walletId),
       adminWalletAddress: adminWallet.walletAddress, // Use fetched admin wallet address
@@ -56,10 +53,6 @@ export const createWithdraw = async (
     }) as Document<unknown, object, IWithdraw> & IWithdraw & { _id: mongoose.Types.ObjectId };
 
     await withdraw.save();
-
-    // Mark the deposit as withdrawn
-    deposit.withdrawn = true;
-    await deposit.save();
 
     return {
       success: true,
@@ -92,6 +85,7 @@ export const getWithdraws = async (userId: string) => {
       userId: withdraw.userId.toString(),
       walletId: withdraw.walletId.toString(),
       depositId: withdraw.depositId.toString(),
+      unit: withdraw.unit, // Include the unit field
     }));
 
     return {
