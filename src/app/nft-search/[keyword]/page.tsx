@@ -1,21 +1,54 @@
 "use client";
-import React from "react";
-import useSearchNFTs from "@/hooks/useSearchNFTs";
+
+import React, { useEffect, useState } from "react";
+import { searchNFTs } from "@/lib/actions/nft.actions";
 import Loader from "@/components/Loader";
 import Image from "next/image";
 import Link from "next/link";
+import { ToastContainer, toast } from "react-toastify";
+import { useParams } from "next/navigation";
 
 const NFTSearchPage = () => {
-  const { fetchedNfts, loading, error } = useSearchNFTs();
+  const params = useParams() as { keyword: string }; // Cast params to include keyword
+  const rawKeyword = params.keyword;
+  const keyword = rawKeyword.replace(/%20/g, " "); // Replace '%20' with spaces
+  const [nfts, setNfts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchNFTs = async () => {
+      try {
+        const result = await searchNFTs(keyword);
+        if (result.success) {
+          setNfts(result.data || []);
+        } else {
+          setError(result.error || "Failed to fetch NFTs.");
+          toast.error(result.error || "Failed to fetch NFTs.");
+        }
+      } catch (err) {
+        console.error("Error fetching NFTs:", err);
+        setError("An unexpected error occurred.");
+        toast.error("An unexpected error occurred.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (keyword) {
+      fetchNFTs();
+    }
+  }, [keyword]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 text-black">
-      <h1 className="text-3xl font-bold mb-6">Search Results</h1>
+      <ToastContainer />
+      <h1 className="text-3xl font-bold mb-6">Search Results for: {keyword}</h1>
       {loading && <Loader text="Loading NFTs..." />}
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-      {!loading && fetchedNfts.length > 0 ? (
+      {!loading && nfts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {fetchedNfts.map((nft) => (
+          {nfts.map((nft) => (
             <div
               key={nft._id}
               className="bg-white rounded-2xl shadow-md p-4 flex flex-col relative"

@@ -46,17 +46,12 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = async () => {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!searchTerm.trim()) {
       return;
     }
-
-    await searchForNFTs(searchTerm);
-
-    // Redirect to nft-search page if not already there
-    if (pathname !== "/nft-search") {
-      router.push("/nft-search");
-    }
+    router.push(`/nft-search/${encodeURIComponent(searchTerm)}`);
   };
 
   return (
@@ -97,7 +92,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
             Explore
           </Link>
           <div className="relative w-full md:w-auto">
-            <div className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
                 placeholder="Search"
@@ -106,12 +101,12 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                 className="border border-gray-500 rounded-full w-full md:w-72 p-2 px-5 placeholder:text-gray-400 focus:outline-none"
               />
               <button
-                onClick={handleSearch}
+                type="submit"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2"
               >
                 <Search className="w-5 h-5 text-gray-400" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
