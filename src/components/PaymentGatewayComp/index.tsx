@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
+import { useState, useEffect } from "react";
 import { createDeposit } from "@/lib/actions/deposit.actions";
 import { getUserDetails } from "@/lib/actions/user.actions";
 import { toast } from "react-toastify";
@@ -10,36 +16,81 @@ const PaymentGatewayComp = () => {
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
 
-  const receiverUpiAddress = process.env.NEXT_PUBLIC_RECEIVER_UPI_ADDRESS || "";
+  useEffect(() => {
+    // Dynamically load the Razorpay SDK
+    const loadRazorpayScript = () => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => {
+        setIsRazorpayLoaded(true);
+        toast.success("Razorpay SDK loaded successfully.");
+      };
+      script.onerror = () => toast.error("Failed to load Razorpay SDK.");
+      document.body.appendChild(script);
+    };
 
-  const handleGooglePayPayment = async () => {
+    if (!window.Razorpay) {
+      loadRazorpayScript();
+    } else {
+      setIsRazorpayLoaded(true);
+    }
+  }, []);
+
+  const handlePayment = async () => {
     try {
-      if (!receiverUpiAddress) {
-        throw new Error("Receiver UPI address is not configured.");
+      if (!isRazorpayLoaded) {
+        throw new Error("Razorpay SDK is not loaded. Please try again later.");
       }
 
-      if (!amount || parseFloat(amount) < 100) {
-        throw new Error("Please enter a valid amount (minimum ₹100)");
-      }
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: parseFloat(amount) * 100, // Convert to paise
+        currency: "INR",
+        name: "JEO NFT",
+        description: "Deposit Payment",
+        image:
+          "https://res.cloudinary.com/dlly7wr0a/image/upload/v1744097716/jeonft_logo_new_zgpy5x.jpg",
+        handler: async (response: any) => {
+          if (response.razorpay_payment_id) {
+            toast.success("Payment successful!");
+            return true;
+          } else {
+            throw new Error("Payment failed. Please try again.");
+          }
+        },
+        prefill: {
+          name: "User",
+          email: "user@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
 
-      // Redirect to Google Pay UPI payment URL
-      const upiUrl = `upi://pay?pa=${receiverUpiAddress}&pn=Receiver&am=${amount}&cu=INR`;
-      window.location.href = upiUrl;
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
 
-      // Simulate payment verification (replace with server-side verification in production)
-      const paymentSuccess = await new Promise((resolve) =>
-        setTimeout(() => resolve(true), 5000) // Simulate a delay for payment verification
-      );
-
-      if (!paymentSuccess) {
-        throw new Error("Google Pay payment failed. Please try again.");
-      }
-
-      toast.success("Google Pay payment successful!");
-      return true;
+      return new Promise((resolve, reject) => {
+        razorpay.on("payment.success", (response: any) => {
+          resolve(response);
+        });
+        razorpay.on("payment.error", (response: any) => {
+          toast.error(response.error.description || "Payment failed.");
+          // Do not stop the process here; let the user retry or cancel explicitly
+        });
+        razorpay.on("payment.cancel", () => {
+          toast.info("Payment was canceled by the user.");
+          setIsLoading(false); // Stop the loader when the user cancels
+          reject(new Error("Payment was canceled by the user."));
+        });
+      });
     } catch (error: any) {
-      toast.error(error.message || "Google Pay payment failed.");
+      toast.error(error.message || "Payment failed.");
+      setIsLoading(false); // Ensure the loader stops on error
       return false;
     }
   };
@@ -66,14 +117,20 @@ const PaymentGatewayComp = () => {
         throw new Error("Failed to fetch user details");
       }
 
-      // Handle Google Pay payment
-      const paymentSuccess = await handleGooglePayPayment();
+      // Handle payment
+      const paymentSuccess = await handlePayment();
       if (!paymentSuccess) {
-        throw new Error("Payment was not successful. Deposit creation aborted.");
+        throw new Error(
+          "Payment was not successful. Deposit creation aborted."
+        );
       }
 
       // Create deposit record with unit as 'rs'
-      const depositResponse = await createDeposit(userId, parseFloat(amount), "rs");
+      const depositResponse = await createDeposit(
+        userId,
+        parseFloat(amount),
+        "rs"
+      );
       if (!depositResponse.success) {
         throw new Error("Failed to record deposit. Please contact support.");
       }
@@ -82,7 +139,6 @@ const PaymentGatewayComp = () => {
       setAmount("");
       setShowWarning(false);
     } catch (error: any) {
-      console.error("Deposit error:", error);
       toast.error(error.message || "Failed to process deposit");
     } finally {
       setIsLoading(false);
@@ -115,13 +171,6 @@ const PaymentGatewayComp = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
             required
           />
-        </div>
-
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <p className="text-sm text-gray-700">
-            Please use the following UPI address to complete your payment via Google Pay:
-          </p>
-          <p className="text-lg font-bold text-blue-900 mt-2">{receiverUpiAddress}</p>
         </div>
 
         <div className="flex items-center mb-4">

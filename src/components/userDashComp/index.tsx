@@ -148,15 +148,15 @@ const UserDashComp = () => {
                   <span className="text-gray-700">{userDetails.username}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Your Referral Code:</span>
-                  <span className="text-gray-700">
-                    {userDetails.userReferralCode}
+                  <span className="font-medium">Referral Link:</span>
+                  <span className="text-gray-700 break-all">
+                    {userDetails.referralLink || "Not available"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium">Used Referral Code:</span>
+                  <span className="font-medium">Your Referral Code:</span>
                   <span className="text-gray-700">
-                    {userDetails.usedReferralCode || "None"}
+                    {userDetails.userReferralCode || "Not available"}
                   </span>
                 </div>
               </div>

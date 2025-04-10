@@ -51,6 +51,11 @@ const Footer: React.FC = () => {
               webpage.
             </p>
 
+            {/* Email Contact */}
+            <p className="text-blue-100 text-sm mb-6">
+              Contact us: <a href="mailto:jeonft40@gmail.com" className="underline">jeonft40@gmail.com</a>
+            </p>
+
             {/* Email Input */}
             <div className="relative mb-12">
               <input

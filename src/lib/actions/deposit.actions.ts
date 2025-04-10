@@ -2,7 +2,7 @@
 
 import { connectToDatabase } from "../database/db";
 import Deposit from "../models/depositModel";
-import { getUserDetails } from "./user.actions";
+import { getUserDetails, convertRsToEth } from "./user.actions";
 import mongoose from "mongoose";
 import { getFirstAdminWallet } from "./adminwallet.actions";
 
@@ -28,14 +28,23 @@ export const createDeposit = async (userId: string, amount: number, unit: "eth" 
       return { success: false, message: "Admin wallet address not configured" };
     }
 
+    // Convert amount to ETH if the unit is 'rs'
+    let amountInEth = amount;
+    if (unit === "rs") {
+      amountInEth = await convertRsToEth(amount);
+      if (!amountInEth || amountInEth <= 0) {
+        return { success: false, message: "Failed to convert INR to ETH" };
+      }
+    }
+
     const deposit = new Deposit({
-      amount,
+      amount: amountInEth,
       userId: new mongoose.Types.ObjectId(userId),
       walletId: userResponse.user.walletId,
       adminWalletAddress: adminWalletResponse.data[0].wallet,
       state: "pending",
       withdrawn: false,
-      unit, // Set the unit (eth or rs)
+      unit: "eth", // Always store the unit as 'eth' after conversion
     }) as any;
 
     await deposit.save();
@@ -45,7 +54,7 @@ export const createDeposit = async (userId: string, amount: number, unit: "eth" 
       message: "Deposit initiated successfully",
       data: {
         depositId: deposit._id.toString(),
-        amount,
+        amount: amountInEth,
         adminWalletAddress: adminWalletResponse.data[0].wallet,
       },
     };

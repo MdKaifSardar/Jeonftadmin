@@ -35,7 +35,6 @@ const UserIncomeComp = () => {
         if (!userResult.success)
           throw new Error(userResult.error || "Failed to fetch user details.");
 
-        // Compute incomes as percentages for ROI and Level; referralIncome is computed internally
         const roiIncome = 1.5; // Fixed ROI income as 1.5%
         const levelIncome = await calculateMLMLevelIncome(userId); // returns 8, 5, or 2
         const referralIncome = await calculateReferralIncome(userId);
@@ -75,38 +74,59 @@ const UserIncomeComp = () => {
   if (loading) return <Loader text="Loading income details..." />;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {error || !income ? (
-        <p className="text-gray-600 text-center">
+        <p className="text-gray-600 text-center col-span-full">
           {error || "No income details available. Please try reloading or contact support."}
         </p>
       ) : (
         <>
-          <h2 className="text-lg font-bold mb-4">Income Details</h2>
-          <p className="mb-2">
-            <span className="font-medium">ROI Income:</span>{" "}
-            {income.roiIncome.toFixed(4)}%
-          </p>
-          <p className="mb-2">
-            <span className="font-medium">Level Income:</span>{" "}
-            {income.levelIncome.toFixed(4)}%
-          </p>
-          <p className="mb-2">
-            <span className="font-medium">Referral Income:</span>{" "}
-            {income.referralIncome.toFixed(4)}%
-          </p>
-          <p className="mb-2">
-            <span className="font-medium">Balance:</span>{" "}
-            {income.balance.toFixed(4)} ETH
-          </p>
-          <p className="mb-2">
-            <span className="font-medium">Total Balance:</span>{" "}
-            {income.totalBalance.toFixed(4)} ETH
-          </p>
-          <p>
-            <span className="font-medium">Total Income:</span>{" "}
-            {(income.incomeAmount + income.referralIncomeAmount).toFixed(4)} ETH
-          </p>
+          {/* ROI Income Box */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-bold mb-4">ROI Income</h2>
+            <p className="mb-2">
+              <span className="font-medium">Percentage:</span> {income.roiIncome.toFixed(2)}%
+            </p>
+            <p className="mb-2">
+              <span className="font-medium">Amount:</span> {(income.roiIncome / 100 * income.balance).toFixed(4)} ETH
+            </p>
+          </div>
+
+          {/* Referral Income Box */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-bold mb-4">Referral Income</h2>
+            <p className="mb-2">
+              <span className="font-medium">Percentage:</span> {income.referralIncome.toFixed(2)}%
+            </p>
+            <p className="mb-2">
+              <span className="font-medium">Amount:</span> {income.referralIncomeAmount.toFixed(4)} ETH
+            </p>
+          </div>
+
+          {/* Level Income Box */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-bold mb-4">Level Income</h2>
+            <p className="mb-2">
+              <span className="font-medium">Percentage:</span> {income.levelIncome.toFixed(2)}%
+            </p>
+            <p className="mb-2">
+              <span className="font-medium">Amount:</span> {(income.levelIncome / 100 * income.balance).toFixed(4)} ETH
+            </p>
+          </div>
+
+          {/* Total Income Box */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-bold mb-4">Total Income</h2>
+            <p className="mb-2">
+              <span className="font-medium">Total Income:</span> {income.incomeAmount.toFixed(4)} ETH
+            </p>
+            <p className="mb-2">
+              <span className="font-medium">Total Balance:</span> {income.totalBalance.toFixed(4)} ETH
+            </p>
+            <p className="mb-2">
+              <span className="font-medium">Balance:</span> {income.balance.toFixed(4)} ETH
+            </p>
+          </div>
         </>
       )}
     </div>

@@ -6,6 +6,7 @@ export interface IUser extends Document {
   password: string;
   referralCode?: string;
   userReferralCode: string;
+  referralLink: string; // New field for referral link
   walletId?: mongoose.Types.ObjectId;
   walletAddress?: string;
   balance: number;
@@ -25,6 +26,7 @@ const UserSchema = new Schema<IUser>({
   password: { type: String, required: true },
   referralCode: { type: String },
   userReferralCode: { type: String, required: true, unique: true },
+  referralLink: { type: String, required: true }, // New field
   walletId: { type: mongoose.Schema.Types.ObjectId, ref: "Wallet" },
   walletAddress: { type: String },
   balance: { type: Number, default: 0 },
