@@ -66,30 +66,32 @@ const WithdrawComponent = () => {
         {withdraws.map((withdraw: any) => (
           <div
             key={withdraw._id}
-            className="bg-white p-6 rounded-xl shadow-md border border-gray-200"
+            className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
           >
-            <p className="mb-2">
-              <span className="font-medium text-gray-700">Amount:</span>{" "}
-              <span className="text-gray-900">
-                {withdraw.amount} {withdraw.unit ? withdraw.unit.toUpperCase() : ""}
-              </span>
-            </p>
-            <p className="mb-2">
-              <span className="font-medium text-gray-700">Status:</span>{" "}
-              <span className={`capitalize ${getStateColor(withdraw.state)}`}>
-                {withdraw.state}
-              </span>
-            </p>
-            <p className="mb-2">
-              <span className="font-medium text-gray-700">Deposit ID:</span>{" "}
-              <span className="text-gray-900">{withdraw.depositId}</span>
-            </p>
-            <p className="mb-2">
-              <span className="font-medium text-gray-700">Created At:</span>{" "}
-              <span className="text-gray-900">
-                {new Date(withdraw.createdAt).toLocaleString()}
-              </span>
-            </p>
+            <div className="flex flex-col gap-2">
+              <p>
+                <span className="font-medium text-gray-700">Amount:</span>{" "}
+                <span className="text-gray-900">
+                  {withdraw.amount} {withdraw.unit ? withdraw.unit.toUpperCase() : ""}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Status:</span>{" "}
+                <span className={`capitalize ${getStateColor(withdraw.state)}`}>
+                  {withdraw.state}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Deposit ID:</span>{" "}
+                <span className="text-gray-900 break-all">{withdraw.depositId}</span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Created At:</span>{" "}
+                <span className="text-gray-900">
+                  {new Date(withdraw.createdAt).toLocaleString()}
+                </span>
+              </p>
+            </div>
           </div>
         ))}
       </div>

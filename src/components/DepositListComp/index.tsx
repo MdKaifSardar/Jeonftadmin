@@ -114,74 +114,70 @@ const DepositList = () => {
         {deposits.map((deposit: any) => (
           <div
             key={deposit._id}
-            className="relative bg-white p-6 rounded-xl shadow-md border border-gray-200"
+            className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="mb-2">
-                  <span className="font-medium text-gray-700">Amount:</span>{" "}
-                  <span className="text-gray-900">
-                    {deposit.amount} {deposit.unit ? deposit.unit.toUpperCase() : ""}
-                  </span>
-                </p>
-                <p className="mb-2">
-                  <span className="font-medium text-gray-700">Status:</span>{" "}
-                  <span
-                    className={`capitalize ${getStateColor(deposit.state)}`}
-                  >
-                    {deposit.state}
-                  </span>
-                </p>
-                <p className="mb-2">
-                  <span className="font-medium text-gray-700">Withdrawn:</span>{" "}
-                  <span
-                    className={`capitalize ${
-                      deposit.withdrawn ? "text-green-600" : "text-gray-600"
-                    }`}
-                  >
-                    {deposit.withdrawn ? "Yes" : "No"}
-                  </span>
-                </p>
-                <p className="mb-2">
-                  <span className="font-medium text-gray-700">
-                    Admin Wallet:
-                  </span>{" "}
-                  <span className="text-gray-900">
-                    {deposit.adminWalletAddress}
-                  </span>
-                </p>
-                <p className="mb-2">
-                  <span className="font-medium text-gray-700">Wallet ID:</span>{" "}
-                  <span className="text-gray-900">{deposit.walletId}</span>
-                </p>
-                <p className="mb-4">
-                  <span className="font-medium text-gray-700">Date:</span>{" "}
-                  <span className="text-gray-900">
-                    {new Date(deposit.createdAt).toLocaleString()}
-                  </span>
-                </p>
-              </div>
-              {deposit.state === "completed" && !deposit.withdrawn && (
-                <div className="flex flex-col items-end space-y-2">
-                  <button
-                    className={`px-4 py-2 rounded font-medium transition-colors ${
-                      isWithdrawEnabled(deposit.createdAt)
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-gray-400 text-gray-700 cursor-not-allowed"
-                    }`}
-                    disabled={!isWithdrawEnabled(deposit.createdAt)}
-                    onClick={() => handleWithdraw(deposit)}
-                  >
-                    Withdraw
-                  </button>
-                  {!isWithdrawEnabled(deposit.createdAt) && (
-                    <p className="text-sm text-gray-600">
-                      {getTimeRemaining(deposit.createdAt)}
-                    </p>
-                  )}
-                </div>
-              )}
+            <div className="flex flex-col gap-2">
+              <p>
+                <span className="font-medium text-gray-700">Amount:</span>{" "}
+                <span className="text-gray-900">
+                  {deposit.amount} {deposit.unit ? deposit.unit.toUpperCase() : ""}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Status:</span>{" "}
+                <span
+                  className={`capitalize ${getStateColor(deposit.state)}`}
+                >
+                  {deposit.state}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Withdrawn:</span>{" "}
+                <span
+                  className={`capitalize ${
+                    deposit.withdrawn ? "text-green-600" : "text-gray-600"
+                  }`}
+                >
+                  {deposit.withdrawn ? "Yes" : "No"}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Admin Wallet:</span>{" "}
+                <span className="text-gray-900 break-all">
+                  {deposit.adminWalletAddress}
+                </span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Wallet ID:</span>{" "}
+                <span className="text-gray-900 break-all">{deposit.walletId}</span>
+              </p>
+              <p>
+                <span className="font-medium text-gray-700">Date:</span>{" "}
+                <span className="text-gray-900">
+                  {new Date(deposit.createdAt).toLocaleString()}
+                </span>
+              </p>
             </div>
+            {deposit.state === "completed" && !deposit.withdrawn && (
+              <div className="mt-4 flex flex-col items-end space-y-2">
+                <button
+                  className={`px-4 py-2 rounded font-medium transition-colors ${
+                    isWithdrawEnabled(deposit.createdAt)
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  }`}
+                  disabled={!isWithdrawEnabled(deposit.createdAt)}
+                  onClick={() => handleWithdraw(deposit)}
+                >
+                  Withdraw
+                </button>
+                {!isWithdrawEnabled(deposit.createdAt) && (
+                  <p className="text-sm text-gray-600">
+                    {getTimeRemaining(deposit.createdAt)}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
