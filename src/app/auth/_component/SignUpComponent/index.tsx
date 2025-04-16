@@ -5,6 +5,7 @@ import { signup } from "@/lib/actions/auth/signup.actions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import emailjs from '@emailjs/browser';
 
 const SignUpComponent: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -12,6 +13,29 @@ const SignUpComponent: React.FC = () => {
   const [password, setPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const router = useRouter();
+
+  const sendWelcomeEmail = async (email: string, username: string) => {
+    try {
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const userId = process.env.NEXT_PUBLIC_EMAILJS_USER_ID;
+
+      if (!serviceId || !templateId || !userId) {
+        throw new Error("EmailJS configuration is missing.");
+      }
+
+      const templateParams = {
+        to_email: email,
+        to_name: username,
+      };
+
+      await emailjs.send(serviceId, templateId, templateParams, userId);
+      toast.success("Welcome email sent successfully!");
+    } catch (error: any) {
+      console.error("Error sending welcome email:", error);
+      toast.error(error.message || "Failed to send welcome email.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +54,10 @@ const SignUpComponent: React.FC = () => {
           localStorage.setItem("userId", String(response.userId)); // Save userId to localStorage
         }
         toast.success(response.message);
+
+        // Send welcome email
+        await sendWelcomeEmail(email, username);
+
         router.push("/"); // Redirect to the home page
       } else {
         toast.error(response.error);
