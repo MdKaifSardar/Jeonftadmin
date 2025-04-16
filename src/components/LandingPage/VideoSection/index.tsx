@@ -21,7 +21,7 @@ const VideoSection = () => {
   return (
     <div
       ref={containerRef}
-      className="relative min-h-[100vh] flex items-center justify-center py-[5vw] sm:py-[10vw]"
+      className="py-[6rem] relative h-fit flex items-center justify-center"
     >
       <motion.div
         style={{
@@ -37,7 +37,7 @@ const VideoSection = () => {
           controls
           playsInline
           preload="none"
-          className="index-video w-full max-w-[90vw] sm:max-w-4xl md:max-w-5xl mx-auto rounded-lg shadow-lg"
+          className="index-video w-[90vw] max-w-[90vw] md:w-[60vw] mx-auto rounded-lg shadow-lg"
         />
       </motion.div>
     </div>

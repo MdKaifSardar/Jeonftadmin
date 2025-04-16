@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { login } from "@/lib/actions/auth/login.actions";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 interface TreasureNFTLoginModalProps {
   onClose: () => void;
@@ -141,12 +142,12 @@ const TreasureNFTLoginModal: React.FC<TreasureNFTLoginModalProps> = ({
 
           <div className="text-center">
             <span className="text-gray-600">Don&apos;t have an account? </span>
-            <button
+            <Link
+              href="/auth/signup"
               className="text-blue-900 hover:underline"
-              onClick={() => alert("Sign up clicked!")}
             >
               Sign up
-            </button>
+            </Link>
           </div>
         </div>
       </div>
