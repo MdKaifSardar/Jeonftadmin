@@ -9,7 +9,11 @@ const NFTCollectibles = () => {
           <Image
             width={100}
             height={100}
+<<<<<<< HEAD
             src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1744101337/nft-images/map2z09czowppyuw48zg.png"
+=======
+            src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
+>>>>>>> 6c1245ccb556df56cc72694981cc7184670bb79f
             alt="Tertiary NFT"
             className="w-full h-full object-cover rounded-lg"
           />
