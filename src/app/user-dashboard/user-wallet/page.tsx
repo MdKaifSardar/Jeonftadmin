@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { updateUserWallet, removeWallet } from "@/lib/actions/user.actions";
 import { createWallet } from "@/lib/actions/wallet.actions";
 import { getUserDetails } from "@/lib/actions/user.actions";
@@ -8,6 +8,12 @@ import Loader from "@/components/Loader";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { ETHEREUM_MAINNET, isEthereumMainnet } from "@/constants/networks";
+
+const getNetworkName = (chainId: string) => {
+  return chainId === "0x1" || chainId === "1" || chainId === "0x01"
+    ? "Ethereum Mainnet"
+    : "Unsupported Network";
+};
 
 const Wallet = () => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
@@ -30,6 +36,50 @@ const Wallet = () => {
       window.ethereum.removeAllListeners("accountsChanged");
     }
   };
+
+  const fetchWalletBalance = async (address: string) => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+        
+        // Only fetch balance if on Ethereum mainnet
+        if (!isEthereumMainnet(chainId)) {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: ETHEREUM_MAINNET.chainId }],
+          });
+        }
+
+        const balance = await window.ethereum.request({
+          method: "eth_getBalance",
+          params: [address, "latest"],
+        });
+        
+        const balanceInWei = BigInt(balance).toString(10);
+        const balanceInEth = (Number(balanceInWei) / 1e18).toFixed(4);
+        setWalletBalance(balanceInEth);
+      } catch (error) {
+        console.error("Error fetching wallet balance:", error);
+      }
+    }
+  };
+
+  const fetchNetwork = useCallback(async () => {
+    if (typeof window.ethereum !== "undefined") {
+      try {
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
+        const networkName = getNetworkName(chainId);
+        setNetwork(networkName);
+        return networkName;
+      } catch (error) {
+        console.error("Error fetching network:", error);
+        return null;
+      }
+    }
+    return null;
+  }, []);
 
   useEffect(() => {
     const initializeWallet = async () => {
@@ -61,57 +111,7 @@ const Wallet = () => {
     };
 
     initializeWallet();
-  }, []);
-
-  const fetchWalletBalance = async (address: string) => {
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        
-        // Only fetch balance if on Ethereum mainnet
-        if (!isEthereumMainnet(chainId)) {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: ETHEREUM_MAINNET.chainId }],
-          });
-        }
-
-        const balance = await window.ethereum.request({
-          method: "eth_getBalance",
-          params: [address, "latest"],
-        });
-        
-        const balanceInWei = BigInt(balance).toString(10);
-        const balanceInEth = (Number(balanceInWei) / 1e18).toFixed(4);
-        setWalletBalance(balanceInEth);
-      } catch (error) {
-        console.error("Error fetching wallet balance:", error);
-      }
-    }
-  };
-
-  const getNetworkName = (chainId: string) => {
-    // Mainnet chainId can come in different formats
-    return chainId === "0x1" || chainId === "1" || chainId === "0x01"
-      ? "Ethereum Mainnet"
-      : "Unsupported Network";
-  };
-
-  const fetchNetwork = async () => {
-    if (typeof window.ethereum !== "undefined") {
-      try {
-        const chainId = await window.ethereum.request({
-          method: "eth_chainId",
-        });
-        const networkName = getNetworkName(chainId);
-        setNetwork(networkName);
-        return networkName;
-      } catch (error) {
-        console.error("Error fetching network:", error);
-        return null;
-      }
-    }
-  };
+  }, [fetchNetwork]);
 
   const isMainnet = network === "Ethereum Mainnet";
 
@@ -124,7 +124,7 @@ const Wallet = () => {
       // Initial network check
       fetchNetwork();
     }
-  }, []);
+  }, [fetchNetwork]);
 
   const formatWalletData = (data: any) => {
     if (!data) return null;
@@ -257,7 +257,7 @@ const Wallet = () => {
         }
       };
     }
-  }, []);
+  }, [fetchNetwork]);
 
   if (isLoading) {
     return (

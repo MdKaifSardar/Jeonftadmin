@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { RefreshCw } from "lucide-react";
 import NFTCard from "../NFTCard";
 
@@ -28,35 +28,7 @@ const NFTGallery: React.FC<NFTGalleryProps> = ({ nft }) => {
     }
   }, [nft]);
 
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: "20px",
-      threshold: 0.1,
-    };
-
-    const observer = new IntersectionObserver(handleObserver, options);
-    const currentLoader = loader.current; // Copy loader.current to a variable
-
-    if (currentLoader) {
-      observer.observe(currentLoader);
-    }
-
-    return () => {
-      if (currentLoader) {
-        observer.unobserve(currentLoader); // Use the copied variable in cleanup
-      }
-    };
-  }, [visibleNfts, loading]);
-
-  const handleObserver = (entries: IntersectionObserverEntry[]) => {
-    const target = entries[0];
-    if (target.isIntersecting && !loading && currentIndex < nft.length) {
-      loadMoreNFTs();
-    }
-  };
-
-  const loadMoreNFTs = () => {
+  const loadMoreNFTs = useCallback(() => {
     if (currentIndex >= nft.length) return;
 
     setLoading(true);
@@ -67,7 +39,38 @@ const NFTGallery: React.FC<NFTGalleryProps> = ({ nft }) => {
       setCurrentIndex((prev) => prev + itemsPerPage);
       setLoading(false);
     }, 800);
-  };
+  }, [currentIndex, nft, itemsPerPage]);
+
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const target = entries[0];
+      if (target.isIntersecting && !loading) {
+        loadMoreNFTs();
+      }
+    },
+    [loading, loadMoreNFTs]
+  );
+
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 0.1,
+    };
+
+    const observer = new IntersectionObserver(handleObserver, options);
+    const currentLoader = loader.current;
+
+    if (currentLoader) {
+      observer.observe(currentLoader);
+    }
+
+    return () => {
+      if (currentLoader) {
+        observer.unobserve(currentLoader);
+      }
+    };
+  }, [handleObserver]);
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 text-black">

@@ -148,9 +148,11 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated }) => {
                   href="/user-dashboard"
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                 >
-                  <img
+                  <Image
                     src="https://res.cloudinary.com/dlly7wr0a/image/upload/v1743359634/unity_logo_2_caf6ec.png"
                     alt="Account Icon"
+                    width={24}
+                    height={24}
                     className="w-6 h-6"
                   />
                   Account
